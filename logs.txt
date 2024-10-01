@@ -1521,3 +1521,17 @@
 2024-10-01 12:59:20,083 - 
 |added message with id: 225 to db with group_id: WPlvwrrPpO|
 2024-10-01 12:59:20,236 - message_views are 5 now
+2024-10-01 14:07:43,315 - filters/admins_query returned True
+2024-10-01 14:07:45,431 - filters/admins_query returned True
+2024-10-01 14:07:47,716 - filters/admins_query returned True
+2024-10-01 14:07:48,242 - filters/admins_query returned True
+2024-10-01 14:07:48,316 - filters/admins_query returned True
+2024-10-01 14:07:51,312 - filters/admins_query returned True
+2024-10-01 14:08:01,633 - filters/admins_query returned True
+2024-10-01 14:08:27,437 - filters/is_user returned True
+2024-10-01 14:59:39,920 - filters/is_user returned True
+2024-10-01 15:22:00,186 - filters/is_user returned True
+2024-10-01 15:25:13,927 - filters/is_user returned True
+2024-10-01 15:25:14,123 - 
+|added message with id: 233 to db with group_id: 3SCr82CBmp|
+2024-10-01 15:25:14,236 - message_views are 6 now
