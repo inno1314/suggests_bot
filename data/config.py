@@ -1,0 +1,39 @@
+from dotenv import load_dotenv
+from os import getenv
+from aiogram import types
+
+from database.base_api import DataBaseApi 
+
+load_dotenv()
+
+WEB_SERVER_HOST = "0.0.0.0"
+WEB_SERVER_PORT = 8000
+MAIN_BOT_PATH = "/suggests/main"
+OTHER_BOTS_PATH = "/suggests/bot/{bot_token}"
+BOT_TOKEN = str(getenv("BOT_TOKEN"))
+BASE_URL = str(getenv("BASE_URL"))
+OTHER_BOTS_URL = f"{BASE_URL}{OTHER_BOTS_PATH}"
+
+DB_URL = "postgresql+asyncpg://inno:root@localhost/suggests_db"
+
+db = DataBaseApi(DB_URL)
+
+
+
+other_bots_commands = [
+        types.BotCommand(command="/start", description="Запустить нижнее меню"),
+        types.BotCommand(command="/rm", description="Очистить предложку"),
+        types.BotCommand(command="/help", description="Помощь"),
+        types.BotCommand(command="/banlist", description="Список заблокированных юзеров"),
+        types.BotCommand(command="/remove_keyboard", description="Удалить нижнее меню")
+    ]
+
+CREATORS = [575586402, 6435987938]
+
+YOOMONEY_TOKEN = '410017428212005.3B7C0CD3949EAB334DB4F4F1272081EC9D28B5593BC0DCBD136715FCAF900D193CDF4366CF6EFF7BFC81162A094625F34DC5F1804F064F066A641510907CCAD3EA2FEC3E213F25FAFACF544497588B29869F4FC9B2C4350F449ACE64EE0C41E07C747E122AA48B9C2B4D8ED888A80BF60A73EEED6FDABAF1BB3D5E47E1358B57'
+UNDRESS_API_KEY = 'gXaxSRdKTdCQplmsRTffEWHcdqQOfG'
+YOOMONEY_TOKEN = '410017428212005.3B7C0CD3949EAB334DB4F4F1272081EC9D28B5593BC0DCBD136715FCAF900D193CDF4366CF6EFF7BFC81162A094625F34DC5F1804F064F066A641510907CCAD3EA2FEC3E213F25FAFACF544497588B29869F4FC9B2C4350F449ACE64EE0C41E07C747E122AA48B9C2B4D8ED888A80BF60A73EEED6FDABAF1BB3D5E47E1358B57'
+CRYPTO_BOT_TOKEN = '172004:AA7x04QcC9pdDTlLJI9HBNpMsMcbDNagp9P'
+AAIO_API_KEY = 'YjYzZDFmMmItNDYzZS00NmM2LWIzYTktNWJlZmUwZGUxYzhlOnpnUGZzaHNmRihYX2gpTys1Jl9rWSg0bjJwJjh6KyNS'
+AAIO_MERCHANT_ID = '20dd9c02-6875-4730-8588-f584adf4d324'
+AAIO_SECRET_KEY = '7717007e9492f254a413a85aad364b7b'

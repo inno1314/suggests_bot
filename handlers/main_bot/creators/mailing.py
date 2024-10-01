@@ -1,0 +1,51 @@
+import json
+from aiogram import types, F, Router, Bot
+from aiogram.fsm.context import FSMContext
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from utils import logger, image_uploader
+from models.message import MessageModel
+from data.config import db, BOT_TOKEN
+from data.messages import messages
+from keyboards.inline import back_markup
+from states import Mailing
+
+router = Router()
+
+
+@router.callback_query(F.data == "mailing")
+async def ask_mailing(call: types.CallbackQuery, state: FSMContext):
+    await state.set_state(Mailing.start)
+    await call.message.edit_text(text=messages['ru']['start_mailing'],
+                                 reply_markup=back_markup)
+
+@router.message(Mailing.start)
+async def start_mailing(message: types.Message, bot: Bot, session: AsyncSession):
+    # model = message.model_dump_json()
+    # json_model = json.loads(model)
+    # await db.ads_api.add_mailing_message(session, json_model, message.html_text)
+    text = message.html_text
+    link = image_uploader(message, BOT_TOKEN) if message.photo else None
+    
+    bots = await db.bot_api.get_bots_for_mailing(session)
+    bots_log = [bot.id for bot in bots]
+    logger.info(f"get bots ids: {bots_log}")
+    for db_bot in bots:
+        tg_bot = Bot(token=db_bot.token, session=bot.session)
+        users_to_mail = await db.bot_api.get_senders_for_mailing(session, db_bot.id)
+        logger.info(f"get users ids: {users_to_mail}")
+        for user_id in users_to_mail:
+            try:
+                if link is not None:
+                    await tg_bot.send_photo(chat_id=user_id, photo=link, caption=text,
+                                            parse_mode="HTML")
+                else:
+                    await tg_bot.send_message(chat_id=user_id, text=text,
+                                              parse_mode="HTML")
+                # await restored_message.copy_to(chat_id=user_id).as_(tg_bot)
+            except Exception as e:
+                await db.bot_api.change_user_status(session, user_id, False)
+                print(e)
+
+    await message.delete()
+
