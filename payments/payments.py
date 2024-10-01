@@ -1,15 +1,15 @@
-import asyncio
-import time
+import logging, asyncio, time
 from aiogram import Bot, Router, F, types, html
 from aiogram.fsm.context import FSMContext
 from aiocryptopay import AioCryptoPay, Networks
 from yoomoney import Client
-from utils import logger
 from data.config import payok_transactions_data as payok_info, db, YOOMONEY_TOKEN
 from payments import create_yoomoney_payment_link, create_payok_payment_link, successful_payment
 from .payok_api import get_transaction
 from keyboards.inline import create_link_keyboard
 
+
+logger = logging.getLogger(__name__)
 router = Router()
 
 

@@ -1,15 +1,18 @@
 import json
+import logging
 from aiogram import types, F, Router, Bot
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from utils import logger, image_uploader
+from utils import image_uploader
 from models.message import MessageModel
 from data.config import db, BOT_TOKEN
 from data.messages import messages
 from keyboards.inline import back_markup
 from states import Mailing
 
+
+logger = logging.getLogger(__name__)
 router = Router()
 
 
@@ -29,11 +32,11 @@ async def start_mailing(message: types.Message, bot: Bot, session: AsyncSession)
     
     bots = await db.bot_api.get_bots_for_mailing(session)
     bots_log = [bot.id for bot in bots]
-    logger.info(f"get bots ids: {bots_log}")
+    logger.info(f"Obtained from DB bot's IDs for mailing: {bots_log}")
     for db_bot in bots:
         tg_bot = Bot(token=db_bot.token, session=bot.session)
         users_to_mail = await db.bot_api.get_senders_for_mailing(session, db_bot.id)
-        logger.info(f"get users ids: {users_to_mail}")
+        logger.info(f"Obtained from DB user's IDs for mailing: {users_to_mail}")
         for user_id in users_to_mail:
             try:
                 if link is not None:
@@ -45,7 +48,7 @@ async def start_mailing(message: types.Message, bot: Bot, session: AsyncSession)
                 # await restored_message.copy_to(chat_id=user_id).as_(tg_bot)
             except Exception as e:
                 await db.bot_api.change_user_status(session, user_id, False)
-                print(e)
+                logger.info(f"An error occured while trying to send mailing message {e}")
 
     await message.delete()
 

@@ -1,8 +1,10 @@
+import logging
 from aiogram import types
 from sqlalchemy.ext.asyncio import AsyncSession
-from utils import logger
 from payments import process_yoomoney_payment, process_aaio_payment, process_crypto_payment
 
+
+logger = logging.getLogger(__name__)
 
 async def process_payment(session: AsyncSession,
                           call: types.CallbackQuery,

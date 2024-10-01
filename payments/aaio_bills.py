@@ -1,4 +1,4 @@
-import uuid, time, asyncio, random, string
+import logging, uuid, time, asyncio, random, string
 
 from AaioAPI import AsyncAaioAPI
 from aiogram import types
@@ -6,10 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from data.config import db, AAIO_API_KEY, AAIO_SECRET_KEY, AAIO_MERCHANT_ID
 from data.messages import messages
-from utils import logger
 from keyboards.inline import create_link_keyboard
 from payments.successful_payment import successful_payment
 
+
+logger = logging.getLogger(__name__)
 
 async def process_aaio_payment(session: AsyncSession, call: types.CallbackQuery,
                                price: int, plan: str):

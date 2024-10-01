@@ -1,5 +1,5 @@
+import logging
 from typing import Any
-
 from aiogram import Bot, html, types, Router, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.context import FSMContext
@@ -9,11 +9,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from data.config import OTHER_BOTS_URL, db, other_bots_commands as commands
 from main import bot as main_bot
 from data.messages import messages
-from utils import is_bot_token, logger
+from utils import is_bot_token
 from states import AddingBot
 from filters import isSub
 from keyboards.inline import bots_list
 
+logger = logging.getLogger(__name__)
 router = Router()
 
 async def add_msg_to_state(state: FSMContext, message: types.Message):
@@ -46,7 +47,7 @@ async def add_bot(message: types.Message, state: FSMContext,
                   bot: Bot, session: AsyncSession) -> Any:
 
     token = str(message.text)
-    logger.info(f"checking token {token}")
+    logger.info(f"Checking token {token} ...")
     new_bot = Bot(token=token, session=bot.session, parse_mode="HTML")
                   # default=DefaultBotProperties(parse_mode="HTML")
                   # )
@@ -97,7 +98,7 @@ async def add_bot(message: types.Message, state: FSMContext,
         await message.delete()
         return
 
-    logger.info(f"Added bot info in db (admin: {admin.id})")
+    logger.info(f"Added bot's information to DB (admin: {admin.id})")
 
 
     third_msg = await message.answer("✅ Бот был успешно создан! "

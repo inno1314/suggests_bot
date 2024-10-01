@@ -1,9 +1,11 @@
+import logging
 from aiogram.types import Message
 from aiogram.filters import BaseFilter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from data.config import db
-from utils import logger
+
+logger = logging.getLogger(__name__)
 
 class isUser(BaseFilter):
     async def __call__(self, message: Message,
@@ -27,6 +29,6 @@ class isUser(BaseFilter):
 
         if user_id in admins:
             return False
-        logger.info("filters/is_user returned True")
+        logger.info("Message is considered to be from user")
         return True
 
