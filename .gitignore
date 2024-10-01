@@ -4,3 +4,4 @@ __pycache__/
 .env
 logs.txt
 view_count_chart.png
+*.sql
