@@ -13,8 +13,8 @@ async def setts_buttons(session: AsyncSession, bot_id: int) -> InlineKeyboardMar
                                      callback_data="change_sign_setts"))
     builder.row(InlineKeyboardButton(text="👥 Совместное управление",
                                      callback_data="multi_admins"))
-    builder.row(InlineKeyboardButton(text="💼 Оформление постов",
-                                     callback_data="post_formatting"))
+    builder.row(InlineKeyboardButton(text="💼 Оформление",
+                                     callback_data="formats"))
     builder.row(InlineKeyboardButton(text="🔙",
                                      callback_data="to_botlist"))
     return builder.as_markup()

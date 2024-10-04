@@ -9,6 +9,7 @@ from .subscribtions import sub_types
 from .payment_methods import payment_methods 
 from .payment_links import create_link_keyboard
 from .multi_admins import show_bot_admins
-from .change_formatting import formatting_markup
+from .change_post_formatting import formatting_markup
+from .bot_formatting import make_formatting_markup
 from .main_admin import main_admins_markup, back_markup
 

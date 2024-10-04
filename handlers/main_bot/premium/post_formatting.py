@@ -17,7 +17,7 @@ async def post_formatting(call: types.CallbackQuery, state: FSMContext,
     db_bot = await db.bot_api.get_bot(session, bot_id)
     current_formatting = db_bot.post_formatting if db_bot.post_formatting is not None \
         else "<i>Не установлена</i>"
-    text = messages['ru']['change_formatting'] + current_formatting
+    text = messages['ru']['post_formatting'] + current_formatting
 
     await state.set_state(BotSettings.formatting)
     await state.update_data(message_id=call.message.message_id)
@@ -33,7 +33,7 @@ async def delete_formatting(call: types.CallbackQuery, state: FSMContext,
 
     await db.bot_api.update_bot_field(session, bot_id,
                                       "post_formatting", None)
-    text = messages['ru']['change_formatting'] + "<i>Не установлена</i>"
+    text = messages['ru']['post_formatting'] + "<i>Не установлена</i>"
     
     markup = await formatting_markup(bot_id)
     await call.message.edit_text(text, reply_markup=markup)
@@ -52,7 +52,7 @@ async def set_new_formatting(message: types.Message, state: FSMContext,
     
     data = await state.get_data()
     message_id = int(data.get("message_id"))
-    text = messages['ru']['change_formatting'] + new_formatting
+    text = messages['ru']['post_formatting'] + new_formatting
     markup = await formatting_markup(bot_id)
     await bot.edit_message_text(text, message.from_user.id,
                                 message_id, reply_markup=markup)
