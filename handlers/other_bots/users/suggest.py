@@ -124,8 +124,10 @@ async def resend_to_admin(message: types.Message, session: AsyncSession,
     text = current_ad_message.html_text if current_ad_message is not None \
         else None 
 
-    if db_bot.is_premium or current_ad_message is None:
-        await message.answer(text=messages['ru']['default_ad'])
+    if db_bot.answer_message is not None:
+        return await message.answer(db_bot.answer_message)
+    elif current_ad_message is None:
+        await message.answer(text=messages['ru']['default_answer'])
     elif current_ad_message.photo_link is None:
         await message.answer(text=text)
     else:

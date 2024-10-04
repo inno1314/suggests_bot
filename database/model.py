@@ -25,6 +25,8 @@ class Bot(Base):
     sign_messages: Mapped[bool] = mapped_column(Boolean, default=True,
                                                 server_default="True")
     post_formatting: Mapped[str] = mapped_column(String(255), nullable=True)
+    start_message: Mapped[str] = mapped_column(String(255), nullable=True)
+    answer_message: Mapped[str] = mapped_column(String(255), nullable=True)
     token: Mapped[str] = mapped_column(String(255), unique=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True,
                                             server_default="True")

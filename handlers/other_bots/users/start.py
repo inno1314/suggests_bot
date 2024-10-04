@@ -26,5 +26,9 @@ async def start(message: types.Message, session: AsyncSession):
         logger.info(f"Added bot {bot_id} to sender {user_id}")
 
     await message.bot.delete_my_commands(scope=types.BotCommandScopeChat(chat_id=user_id))
-    await message.answer(messages['ru']['senders_start'])
+
+    db_bot = await db.bot_api.get_bot(session, bot_id)
+    text = db_bot.start_message if db_bot.start_message is not None \
+        else messages['ru']['senders_start']
+    await message.answer(text)
 
