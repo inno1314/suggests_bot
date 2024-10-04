@@ -1,3 +1,4 @@
+import logging
 from aiogram import Bot, types, Router, F, html
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -5,10 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from models.message import MessageModel
 from data.config import db
 from data.messages import messages
-from utils import logger, restore_album
+from utils import restore_album
 from keyboards.inline import channels_list
 from states import PublishMedia
 
+logger = logging.getLogger(__name__)
 router = Router()
 
 
@@ -44,7 +46,7 @@ async def clear_and_block(call: types.CallbackQuery, session: AsyncSession):
     for message in messages:
         await bot.delete_message(message.chat_id, message.id)
         await db.message_api.delete_suggested_msg(session, message.id)
-        logger.info(f"deleting {message.id} ...")
+        logger.info(f"Deleting message {message.id} ...")
 
     if call.data[:5] == "block":
         await db.sender_api.change_block_status(session, sender_id, bot.id)
@@ -56,7 +58,7 @@ async def clear_all(call: types.CallbackQuery, session: AsyncSession):
     group_id = call.data.split()[1]
     group = await db.message_api.get_messages_by_group_id(session, bot.id, group_id)
     for message in group:
-        logger.info(f"deleting {message.id} ...")
+        logger.info(f"Deleting message {message.id} ...")
         try:
             await bot.delete_message(chat_id=message.chat_id,
                                message_id=message.id)

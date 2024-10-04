@@ -1,4 +1,4 @@
-import time, asyncio
+import time, asyncio, logging
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from yoomoney import Quickpay, Client
@@ -6,10 +6,11 @@ from aiogram import types
 
 from data.config import db, YOOMONEY_TOKEN
 from data.messages import messages
-from utils import logger
 from keyboards.inline import create_link_keyboard
 from payments.successful_payment import successful_payment
 
+
+logger = logging.getLogger(__name__)
 
 async def process_yoomoney_payment(session: AsyncSession, call: types.CallbackQuery,
                                    price: int, plan: str):

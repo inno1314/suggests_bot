@@ -1,12 +1,15 @@
+import logging
 from datetime import datetime, timezone
 from aiogram import Bot, types
 
-from utils import logger, clean_subscription
+from utils import clean_subscription
 from data.messages import messages
 
 
+logger = logging.getLogger(__name__)
+
 async def db_subscriptions_checker(bot: Bot, db):
-    logger.info("Проверка подписок начата")
+    logger.info("APS started subscriptions checking job...")
     async with db.session as session:
         subscriptions = await db.subscription_api.get_all_subscriptions(session)
 
@@ -22,9 +25,9 @@ async def db_subscriptions_checker(bot: Bot, db):
                                    types.InlineKeyboardButton(text="❌",
                                                               callback_data="OK")
                                    ]]))
-            logger.info(f"Уведомление отправлено пользователю {sub.admin_id}")
+            logger.info(f"User {sub.admin_id} was notified about expiration")
         if days_left < 0:
             await clean_subscription(session, sub.admin_id, db)
 
-    logger.info("Проверка подписок завершена")
+    logger.info("APS completed subscriptions checking job")
 

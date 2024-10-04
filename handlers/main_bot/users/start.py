@@ -1,3 +1,4 @@
+import logging
 import re
 from aiogram import F, types, Router
 from aiogram.filters import CommandStart, CommandObject
@@ -6,8 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from data.messages import messages
 from data.config import db, other_bots_commands as commands
 from keyboards.inline import start_msg_markup
-from utils import logger
 
+logger = logging.getLogger(__name__)
 router = Router()
 
 @router.message(CommandStart(
@@ -26,7 +27,7 @@ async def add_invited_admin(message: types.Message, session: AsyncSession,
             session=session, admin_id=user.id,
             name=user.first_name,
             language_code=user.language_code)
-         logger.info(f"added admin {user.id} to db")
+         logger.info(f"Added admin {user.id} to DB")
 
     if command.args is not None:
         code = command.args.split("_")[1]

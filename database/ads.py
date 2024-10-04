@@ -1,10 +1,13 @@
+import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from datetime import date
+from typing import Any
 
-from utils import logger
 from .base_class import BaseDBApi
 from .model import AdMessageViews, AdMessage, MailingMessage
+
+logger = logging.getLogger(__name__)
 
 class AdsDatabaseApi(BaseDBApi):
     async def count_views(self, session: AsyncSession):
@@ -19,20 +22,21 @@ class AdsDatabaseApi(BaseDBApi):
                 view_count = 1
             )
             session.add(message_view)
-            logger.info("added message views for today")
+            logger.info("Added today's message view in DB")
         else:
+            views = message_view.view_count
             stmt = (
                 update(AdMessageViews)
                 .where(AdMessageViews.id == message_view.id)
                 .values(view_count=message_view.view_count + 1)
             )
-            logger.info(f"message_views are {message_view.view_count + 1} now")
             await session.execute(stmt)
+            logger.info(f"Incremented message_views {views} -> {views + 1}")
 
         await session.commit()
 
     async def add_mailing_message(self, session: AsyncSession,
-                              data: any, html_text: str):
+                              data: Any, html_text: str):
         message = MailingMessage(
             html_text = html_text,
             inline_text = "",
@@ -40,9 +44,10 @@ class AdsDatabaseApi(BaseDBApi):
             message_data = data
         )
         session.add(message)
+        logger.info("Added new mailing message in DB")
         await session.commit()
 
-    async def get_ad_message(self, session: AsyncSession) -> AdMessage or None:
+    async def get_ad_message(self, session: AsyncSession) -> AdMessage | None:
         query = select(AdMessage).where(AdMessage.id == 1)
         result = await session.execute(query)
         ad_message = result.scalar_one_or_none()
@@ -56,5 +61,6 @@ class AdsDatabaseApi(BaseDBApi):
             .values(html_text=html_text, photo_link=link)
         )
         await session.execute(query)
+        logger.info("Edited mailing message in DB")
         await session.commit()
 

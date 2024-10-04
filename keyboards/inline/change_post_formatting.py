@@ -1,11 +1,11 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-async def formatting_markup(bot_id: int) -> InlineKeyboardMarkup:
+async def formatting_markup(field: str, bot_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
         [
-            InlineKeyboardButton(text="❌ Удалить подпись",
-                                       callback_data="no_formatting")
+            InlineKeyboardButton(text="❌ Вернуть значение по умолчанию",
+                                       callback_data=f"clear_{field}")
         ],
         [
             InlineKeyboardButton(text="🔙",

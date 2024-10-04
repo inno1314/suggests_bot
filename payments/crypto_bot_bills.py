@@ -1,5 +1,4 @@
-import time
-import asyncio
+import logging, time, asyncio
 
 from aiocryptopay import AioCryptoPay, Networks
 from aiogram import types
@@ -7,10 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from data.config import db, CRYPTO_BOT_TOKEN
 from data.messages import messages
-from utils import logger
 from keyboards.inline import create_link_keyboard
 from payments.successful_payment import successful_payment
 
+
+logger = logging.getLogger(__name__)
 
 async def process_crypto_payment(session: AsyncSession, call: types.CallbackQuery,
                                  price: int, plan: str):

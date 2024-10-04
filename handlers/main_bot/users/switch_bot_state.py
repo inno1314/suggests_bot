@@ -1,10 +1,12 @@
+import logging
 from aiogram import Bot, types, Router, F
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from data.config import OTHER_BOTS_URL, db
 from keyboards.inline import bots_list
-from utils import logger, is_main_admin
+from utils import is_main_admin
 
+logger = logging.getLogger(__name__)
 router = Router()
 
 @router.callback_query(F.data[:6] == "switch")

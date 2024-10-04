@@ -1,11 +1,12 @@
+import logging
 from aiogram import types, Router, F
 from aiogram.filters import Command, or_f
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from keyboards.inline import ok_button, banned_buttons
 from data.config import db
-from utils import logger
 
+logger = logging.getLogger(__name__)
 router = Router()
 
 async def show_banned(message: types.Message, session: AsyncSession,
@@ -49,7 +50,7 @@ async def unban_sender(call: types.CallbackQuery, session: AsyncSession):
     bot_id = call.bot.id
 
     await db.sender_api.change_block_status(session, sender_id, bot_id)
-    logger.info(f"deleted user {sender_id} from banlist")
+    logger.info(f"Sender {sender_id} was deleted from banlist")
 
     await show_banlist(call.message, session)
 

@@ -1,11 +1,14 @@
+import logging
+
 from aiogram import types, F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from utils import logger
 from data.config import db
 from states import GiveSub
+
+logger = logging.getLogger(__name__)
 
 router = Router()
 
@@ -73,7 +76,7 @@ async def give_sub_to_user_id(message: types.Message, state: FSMContext,
     bots = await db.admin_api.get_admins_bots(session, admin_id)
     for bot in bots:
         await db.bot_api.update_bot_field(session, bot.id, "is_premium", True)
-        logger.info(f"is_premium статус обновлен для бота {bot.id}")
+        logger.info(f"Status is_premium was updated for bot {bot.id}")
     await message.answer("Изменения применены")
     await state.clear()
 

@@ -1,13 +1,14 @@
+import logging
 from typing import Any
-
 from aiogram import Bot, types, Router, F
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from data.config import db
 from data.messages import messages
 from keyboards.inline import bots_list
-from utils import logger, is_main_admin
+from utils import is_main_admin
 
+logger = logging.getLogger(__name__)
 router = Router()
 
 
@@ -29,11 +30,11 @@ async def delete_bot(call: types.CallbackQuery,
     bot_user = await bot.get_me()
     await bot.delete_my_commands()
     await bot.delete_webhook(drop_pending_updates=True)
-    logger.info(f"Deleted webhook for bot id {bot_user.id}")
+    logger.info(f"Deleted webhook for bot {bot_user.id}")
 
     await db.message_api.clean_feed(session, bot_user.id)
     await db.bot_api.delete_bot(session=session, bot_id=bot_user.id)
-    logger.info(f"Deleted bot from database")
+    logger.info(f"Deleted bot {bot_user.id} from database")
 
     bots = await db.admin_api.get_admins_bots(session=session,
                              admin_id=call.from_user.id)

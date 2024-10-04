@@ -1,4 +1,4 @@
-import json
+import json, logging
 from aiogram import Bot, html, types, Router
 from aiogram.client.default import DefaultBotProperties
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,10 +8,11 @@ from typing import Any
 from data.config import db
 from data.messages import messages
 from keyboards.inline import make_recive_options
-from utils import logger, make_new_album, generate_id, \
+from utils import make_new_album, generate_id, \
     deserialize_telegram_object_to_python
 
 
+logger = logging.getLogger(__name__)
 router = Router()
 
 async def send_with_kwargs(bot: Bot, session: AsyncSession, 
@@ -31,7 +32,7 @@ async def send_with_kwargs(bot: Bot, session: AsyncSession,
                          data=data,
                          bot_id=bot.id,
                          group_id=group_id)
-    logger.info(f"\n|added message with id: {sent_message.message_id} to db with group_id: {group_id}|")
+    logger.info(f"\n|Added message with id: {sent_message.message_id} to DB with group_id: {group_id}|")
 
 
 @router.message()
@@ -57,7 +58,7 @@ async def resend_to_admin(message: types.Message, session: AsyncSession,
 
     if sender.id in db_bot.banlist:
         await message.answer("Вы заблокированы! Ваши сообщения не будут отправляться.")
-        logger.info(f"message from user {sender.id} was blocked")
+        logger.info(f"Message from user {sender.id} was blocked")
         return
 
     for admin_id in admins:    
@@ -93,7 +94,7 @@ async def resend_to_admin(message: types.Message, session: AsyncSession,
                                      )
 
             ids_of_sent = [message.message_id for message in list_of_sent]
-            logger.info(f"\n|added messages with ids: {ids_of_sent} to db with group_id: {group_id}|")
+            logger.info(f"\n|Added messages with ids: {ids_of_sent} to DB with group_id: {group_id}|")
             markup = await make_recive_options(
                 message_id=str(group_id),
                 sender_id=sender_id,
@@ -111,7 +112,7 @@ async def resend_to_admin(message: types.Message, session: AsyncSession,
             await send_with_kwargs(bot, session, sender_id, kwargs, message, json_model)
         
         elif message.sticker:
-            logger.info("sticker message was blocked")
+            logger.info("Sticker message was blocked")
             await message.answer("Недопустимый тип вложения")
             return
         
@@ -123,8 +124,10 @@ async def resend_to_admin(message: types.Message, session: AsyncSession,
     text = current_ad_message.html_text if current_ad_message is not None \
         else None 
 
-    if db_bot.is_premium or current_ad_message is None:
-        await message.answer(text=messages['ru']['default_ad'])
+    if db_bot.answer_message is not None:
+        return await message.answer(db_bot.answer_message)
+    elif current_ad_message is None:
+        await message.answer(text=messages['ru']['default_answer'])
     elif current_ad_message.photo_link is None:
         await message.answer(text=text)
     else:
