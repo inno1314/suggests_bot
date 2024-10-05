@@ -11,9 +11,11 @@ async def generate_view_count_chart(session: AsyncSession):
     end_date = datetime.today().date() + timedelta(days=1)
     start_date = end_date - timedelta(days=30)
 
-    stmt = select(AdMessageViews).where(
-        AdMessageViews.view_date.between(start_date, end_date)
-    ).order_by(AdMessageViews.view_date)
+    stmt = (
+        select(AdMessageViews)
+        .where(AdMessageViews.view_date.between(start_date, end_date))
+        .order_by(AdMessageViews.view_date)
+    )
 
     result = await session.execute(stmt)
     views = result.scalars().all()
@@ -26,18 +28,17 @@ async def generate_view_count_chart(session: AsyncSession):
     counts = [view_counts.get(date, 0) for date in dates]
 
     plt.figure(figsize=(10, 5))
-    plt.plot(dates, counts, marker='o')
-    plt.xlabel('Дата')
-    plt.ylabel('Количество просмотров')
-    plt.title('Количество просмотров за последний месяц')
+    plt.plot(dates, counts, marker="o")
+    plt.xlabel("Дата")
+    plt.ylabel("Количество просмотров")
+    plt.title("Количество просмотров за последний месяц")
     plt.grid(True)
 
     date_format = DateFormatter("%d.%m")
     plt.gca().xaxis.set_major_formatter(date_format)
 
-    chart_path = 'view_count_chart.png'
+    chart_path = "view_count_chart.png"
     plt.savefig(chart_path)
     plt.close()
-    
-    return chart_path, count
 
+    return chart_path, count

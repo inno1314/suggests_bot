@@ -9,18 +9,23 @@ from data.messages import messages
 
 router = Router()
 
+
 @router.message(Command("admin"))
 async def show_menu(message: types.Message):
     await message.delete()
-    await message.answer(text=messages['ru']['admin_panel'],
-                         reply_markup=main_admins_markup)
+    await message.answer(
+        text=messages["ru"]["admin_panel"], reply_markup=main_admins_markup
+    )
+
 
 @router.callback_query(F.data == "to_admins_menu")
 async def to_menu_from_call(call: types.CallbackQuery, state: FSMContext):
     await state.clear()
     await call.message.delete()
-    await call.message.answer(text=messages['ru']['admin_panel'],
-                              reply_markup=main_admins_markup)
+    await call.message.answer(
+        text=messages["ru"]["admin_panel"], reply_markup=main_admins_markup
+    )
+
 
 # @router.message(Command("ad_to_db"))
 # async def debug(message: types.Message, session: AsyncSession):
@@ -32,4 +37,3 @@ async def to_menu_from_call(call: types.CallbackQuery, state: FSMContext):
 #                                     data=json_model)
 #
 #     await message.delete()
-

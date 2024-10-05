@@ -6,15 +6,15 @@ from keyboards.default import main_menu
 
 router = Router()
 
+
 @router.message(Command("start"))
 async def start(message: types.Message):
     await message.delete()
 
     await message.bot.set_my_commands(
-        commands=commands,
-        scope=types.BotCommandScopeChat(chat_id=message.from_user.id)
+        commands=commands, scope=types.BotCommandScopeChat(chat_id=message.from_user.id)
     )
 
-    await message.answer(f"ℹ️ Бот запущен, нижняя клавиатура загружена!",
-                         reply_markup=main_menu)
-
+    await message.answer(
+        f"ℹ️ Бот запущен, нижняя клавиатура загружена!", reply_markup=main_menu
+    )
