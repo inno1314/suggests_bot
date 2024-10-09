@@ -39,4 +39,4 @@ async def add_invited_admin(
         if bot_id is not None:
             await db.bot_api.add_admin(session, bot_id, admin_id=user.id)
 
-    await message.answer(messages["ru"]["start"], reply_markup=start_msg_markup)
+    await message.answer(messages["start"], reply_markup=start_msg_markup)

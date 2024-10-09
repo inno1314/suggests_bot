@@ -14,7 +14,7 @@ router = Router()
 @router.callback_query(F.data == "edit_ads")
 async def view_ads(call: types.CallbackQuery, session: AsyncSession, state: FSMContext):
     current_ad_message = await db.ads_api.get_ad_message(session)
-    text = current_ad_message.html_text + messages["ru"]["edit_ads"]
+    text = current_ad_message.html_text + messages["edit_ads"]
 
     await state.set_state(Ads.editing)
 
@@ -41,7 +41,7 @@ async def edit_ads(message: types.Message, session: AsyncSession, state: FSMCont
     message_id = int(data.get("message_id"))
 
     current_ad_message = await db.ads_api.get_ad_message(session)
-    text = current_ad_message.html_text + messages["ru"]["edit_ads"]
+    text = current_ad_message.html_text + messages["edit_ads"]
 
     await message.delete()
     await message.bot.delete_message(message.from_user.id, message_id)

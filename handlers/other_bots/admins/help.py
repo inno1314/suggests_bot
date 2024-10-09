@@ -10,7 +10,7 @@ router = Router()
 async def start(message: types.Message):
     await message.delete()
     await message.answer(
-        messages["ru"]["help"],
+        messages["help"],
         reply_markup=types.InlineKeyboardMarkup(
             inline_keyboard=[
                 [types.InlineKeyboardButton(text="OK", callback_data="ok_help")]

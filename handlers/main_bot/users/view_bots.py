@@ -22,7 +22,7 @@ async def view_bots(call: types.CallbackQuery, session: AsyncSession):
 
     markup = await bots_list(bots)
 
-    await call.message.edit_text(messages["ru"]["bots_list"], reply_markup=markup)
+    await call.message.edit_text(messages["bots_list"], reply_markup=markup)
 
 
 @router.callback_query(F.data[:9] == "bots_page")

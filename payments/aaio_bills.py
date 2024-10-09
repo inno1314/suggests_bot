@@ -59,5 +59,5 @@ async def process_aaio_payment(session: AsyncSession, call: types.CallbackQuery,
 
     # Время ожидания истекло
     await msg.edit_text(
-        text=messages['ru']['failed_payment'],
+        text=messages['failed_payment'],
         disable_web_page_preview=True)

@@ -27,5 +27,5 @@ class isSub(BaseFilter):
             await call.answer(text="⚠️Срок подписки истек!", show_alert=True)
 
         logger.info("Ths user hasn't paid subscription")
-        await call.answer(messages["ru"]["not_sub"], show_alert=True)
+        await call.answer(messages["not_sub"], show_alert=True)
         return False

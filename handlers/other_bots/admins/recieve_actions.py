@@ -74,7 +74,7 @@ async def publish(call: types.CallbackQuery, session: AsyncSession, state: FSMCo
         session=session, bot_id=call.bot.id
     )
     if len(channels) == 0:
-        await call.answer(messages["ru"]["no_channels"], show_alert=True)
+        await call.answer(messages["no_channels"], show_alert=True)
         return
 
     group_id = call.data.split()[1]

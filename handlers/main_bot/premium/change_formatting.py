@@ -9,14 +9,14 @@ from keyboards.inline import formatting_markup, make_formatting_markup, ok_butto
 from data.messages import messages
 
 default_texts = {
-    "start_msg_formatting": messages["ru"]["senders_start"],
-    "answer_msg_formatting": messages["ru"]["default_answer"],
+    "start_msg_formatting": messages["senders_start"],
+    "answer_msg_formatting": messages["default_answer"],
     "post_formatting": "<i>Не установлена</i>"
 }
 texts_for_admin = {
-    "start_msg_formatting": messages["ru"]["start_msg_formatting"],
-    "answer_msg_formatting": messages["ru"]["answer_msg_formatting"],
-    "post_formatting": messages["ru"]["post_formatting"],
+    "start_msg_formatting": messages["start_msg_formatting"],
+    "answer_msg_formatting": messages["answer_msg_formatting"],
+    "post_formatting": messages["post_formatting"],
 }
 db_fields = {
     "start_msg_formatting": "start_message",
@@ -43,7 +43,7 @@ async def bot_formatting(call: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     bot_id = int(data.get("bot_id"))
     markup = await make_formatting_markup(bot_id)
-    await call.message.edit_text(messages["ru"]["bot_formatting"], reply_markup=markup)
+    await call.message.edit_text(messages["bot_formatting"], reply_markup=markup)
 
 
 @router.callback_query(

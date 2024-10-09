@@ -24,7 +24,7 @@ async def successful_payment(session: AsyncSession,
     for bot in bots:
         await db.bot_api.update_bot_field(session, bot.id, "is_premium", True)
         logger.info(f"Status is_premium was updated for bot {bot.id}")
-    await message.edit_text(text=messages['ru']['successful_payment'],
+    await message.edit_text(text=messages['successful_payment'],
                            reply_markup=types.InlineKeyboardMarkup(
                            inline_keyboard=[[types.InlineKeyboardButton(text="🔙",
                                                       callback_data="to_sub_plans")

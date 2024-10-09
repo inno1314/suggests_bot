@@ -37,7 +37,7 @@ async def create_bot(
 
     sent_messages = []
     first_msg = call.message.message_id
-    second_msg = await call.message.answer(messages["ru"]["add_bot"])
+    second_msg = await call.message.answer(messages["add_bot"])
     sent_messages.append(first_msg)
     sent_messages.append(second_msg.message_id)
     await state.set_state(AddingBot.token)

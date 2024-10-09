@@ -29,6 +29,6 @@ async def start(message: types.Message, session: AsyncSession):
 
     db_bot = await db.bot_api.get_bot(session, bot_id)
     text = db_bot.start_message if db_bot.start_message is not None \
-        else messages['ru']['senders_start']
+        else messages['senders_start']
     await message.answer(text)
 

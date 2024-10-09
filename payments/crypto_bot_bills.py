@@ -58,6 +58,6 @@ async def process_crypto_payment(session: AsyncSession, call: types.CallbackQuer
             logger.info(f"Ошибка при проверке статуса платежа: {e}")
 
     await msg.edit_text(
-        text=messages['ru']['failed_payment'],
+        text=messages['failed_payment'],
         disable_web_page_preview=True)
     await crypto.close()
