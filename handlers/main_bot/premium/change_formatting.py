@@ -1,17 +1,16 @@
-from aiogram import types, Router, F
+from aiogram import html, types, Router, F
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.model import Bot
 from data.config import db
 from states import BotSettings
-from keyboards.inline import formatting_markup, make_formatting_markup
+from keyboards.inline import formatting_markup, make_formatting_markup, ok_button
 from data.messages import messages
 
 default_texts = {
     "start_msg_formatting": messages["ru"]["senders_start"],
     "answer_msg_formatting": messages["ru"]["default_answer"],
-    "post_formatting": "<i>Не установлена</i>"
 }
 texts_for_admin = {
     "start_msg_formatting": messages["ru"]["start_msg_formatting"],
@@ -103,12 +102,17 @@ async def set_new_formatting(
     data = await state.get_data()
     bot_id = int(data.get("bot_id"))
     formatting_field: str = data.get("formatting_field")
-    print(f"field: {formatting_field}")
 
     await message.delete()
-    await db.bot_api.update_bot_field(
-        session, bot_id, db_fields[formatting_field], new_formatting
-    )
+    try:
+        await db.bot_api.update_bot_field(
+            session, bot_id, db_fields[formatting_field], new_formatting
+        )
+    except:
+        return await message.answer(
+            f"{html.bold('❗️ Длина строки не должна превышать 255 символов!')}",
+            reply_markup=ok_button,
+        )
 
     message_id = int(data.get("message_id"))
     text = texts_for_admin[formatting_field] + new_formatting
