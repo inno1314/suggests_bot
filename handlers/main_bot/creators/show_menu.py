@@ -14,7 +14,7 @@ router = Router()
 async def show_menu(message: types.Message):
     await message.delete()
     await message.answer(
-        text=messages["ru"]["admin_panel"], reply_markup=main_admins_markup
+        text=messages["admin_panel"], reply_markup=main_admins_markup
     )
 
 
@@ -23,7 +23,7 @@ async def to_menu_from_call(call: types.CallbackQuery, state: FSMContext):
     await state.clear()
     await call.message.delete()
     await call.message.answer(
-        text=messages["ru"]["admin_panel"], reply_markup=main_admins_markup
+        text=messages["admin_panel"], reply_markup=main_admins_markup
     )
 
 

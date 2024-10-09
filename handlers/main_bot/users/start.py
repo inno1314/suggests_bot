@@ -22,7 +22,7 @@ async def add_invited_admin(
     user = message.from_user
     bot = message.bot
     # lang = str(user.language_code)
-    lang = "ru"
+    # lang = "ru"
     admin = await db.admin_api.get_admin(session=session, admin_id=user.id)
     if admin is None:
         admin = await db.admin_api.add_admin(
@@ -39,4 +39,4 @@ async def add_invited_admin(
         if bot_id is not None:
             await db.bot_api.add_admin(session, bot_id, admin_id=user.id)
 
-    await message.answer(messages[lang]["start"], reply_markup=start_msg_markup)
+    await message.answer(messages["start"], reply_markup=start_msg_markup)

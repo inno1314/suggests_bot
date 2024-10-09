@@ -18,11 +18,11 @@ async def view_bots(call: types.CallbackQuery, session: AsyncSession):
     # admin: Admin = await db.admin_api.get_admin(session=session,
     #                        admin_id=call.from_user.id)
     # lang = admin.language_code
-    lang = "ru"
+    # lang = "ru"
 
     markup = await bots_list(bots)
 
-    await call.message.edit_text(messages[str(lang)]["bots_list"], reply_markup=markup)
+    await call.message.edit_text(messages["bots_list"], reply_markup=markup)
 
 
 @router.callback_query(F.data[:9] == "bots_page")

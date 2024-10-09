@@ -4,7 +4,6 @@ from aiogram import Bot, types, Router, F
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from data.config import db
-from data.messages import messages
 from keyboards.inline import bots_list
 from utils import is_main_admin
 

@@ -20,7 +20,7 @@ router = Router()
 async def ask_mailing(call: types.CallbackQuery, state: FSMContext):
     await state.set_state(Mailing.start)
     await call.message.edit_text(
-        text=messages["ru"]["start_mailing"], reply_markup=back_markup
+        text=messages["start_mailing"], reply_markup=back_markup
     )
 
 

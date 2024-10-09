@@ -12,7 +12,7 @@ router = Router()
 
 @router.callback_query(F.data == "to_menu")
 async def to_menu(call: types.CallbackQuery):
-    await call.message.edit_text(messages["ru"]["start"], reply_markup=start_msg_markup)
+    await call.message.edit_text(messages["start"], reply_markup=start_msg_markup)
 
 
 @router.callback_query(F.data == "to_botlist")

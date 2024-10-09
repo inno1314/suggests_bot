@@ -1,22 +1,22 @@
-from aiogram import types, Router, F
+from aiogram import html, types, Router, F
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.model import Bot
 from data.config import db
 from states import BotSettings
-from keyboards.inline import formatting_markup, make_formatting_markup
+from keyboards.inline import formatting_markup, make_formatting_markup, ok_button
 from data.messages import messages
 
 default_texts = {
-    "start_msg_formatting": messages['ru']['senders_start'],
-    "answer_msg_formatting": messages['ru']['default_answer'],
+    "start_msg_formatting": messages["senders_start"],
+    "answer_msg_formatting": messages["default_answer"],
     "post_formatting": "<i>Не установлена</i>"
 }
 texts_for_admin = {
-    "start_msg_formatting": messages["ru"]["start_msg_formatting"],
-    "answer_msg_formatting": messages["ru"]["answer_msg_formatting"],
-    "post_formatting": messages["ru"]["post_formatting"],
+    "start_msg_formatting": messages["start_msg_formatting"],
+    "answer_msg_formatting": messages["answer_msg_formatting"],
+    "post_formatting": messages["post_formatting"],
 }
 db_fields = {
     "start_msg_formatting": "start_message",
@@ -43,7 +43,7 @@ async def bot_formatting(call: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     bot_id = int(data.get("bot_id"))
     markup = await make_formatting_markup(bot_id)
-    await call.message.edit_text(messages["ru"]["bot_formatting"], reply_markup=markup)
+    await call.message.edit_text(messages["bot_formatting"], reply_markup=markup)
 
 
 @router.callback_query(
@@ -103,12 +103,17 @@ async def set_new_formatting(
     data = await state.get_data()
     bot_id = int(data.get("bot_id"))
     formatting_field: str = data.get("formatting_field")
-    print(f"field: {formatting_field}")
 
     await message.delete()
-    await db.bot_api.update_bot_field(
-        session, bot_id, db_fields[formatting_field], new_formatting
-    )
+    try:
+        await db.bot_api.update_bot_field(
+            session, bot_id, db_fields[formatting_field], new_formatting
+        )
+    except:
+        return await message.answer(
+            f"{html.bold('❗️ Длина строки не должна превышать 255 символов!')}",
+            reply_markup=ok_button,
+        )
 
     message_id = int(data.get("message_id"))
     text = texts_for_admin[formatting_field] + new_formatting

@@ -13,6 +13,6 @@ async def is_main_admin(
     bot = await db.bot_api.get_bot(session, bot_id)
 
     if call.from_user.id != bot.creator_id:
-        await call.answer(messages["ru"]["not_main_admin"], show_alert=True)
+        await call.answer(messages["not_main_admin"], show_alert=True)
         return False
     return True

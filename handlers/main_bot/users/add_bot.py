@@ -29,7 +29,7 @@ async def add_msg_to_state(state: FSMContext, message: types.Message):
 async def create_bot(
     call: types.CallbackQuery, state: FSMContext, session: AsyncSession
 ):
-    lang = str(call.from_user.language_code)
+    # lang = str(call.from_user.language_code)
     bots = await db.admin_api.get_admins_bots(session, call.from_user.id)
 
     if len(bots) > 1 and not await isSub.__call__(isSub(), call, session):
@@ -37,7 +37,7 @@ async def create_bot(
 
     sent_messages = []
     first_msg = call.message.message_id
-    second_msg = await call.message.answer(messages[lang]["add_bot"])
+    second_msg = await call.message.answer(messages["add_bot"])
     sent_messages.append(first_msg)
     sent_messages.append(second_msg.message_id)
     await state.set_state(AddingBot.token)

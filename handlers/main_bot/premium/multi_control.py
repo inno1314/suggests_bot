@@ -23,7 +23,7 @@ async def get_admin(call: types.CallbackQuery, session: AsyncSession, state: FSM
         await db.bot_api.remove_admin(session, bot_id, admin_id)
 
     markup = await show_bot_admins(session, call, bot_id)
-    await call.message.edit_text(text=messages['ru']['admins_list'],
+    await call.message.edit_text(text=messages['admins_list'],
                                  reply_markup=markup)
 
 @router.callback_query(BotSettings.change, F.data[:10] == "admin_page")
@@ -43,7 +43,7 @@ async def add_admin(call: types.CallbackQuery, state: FSMContext,
     code = await db.codes_api.add_code(session, bot_id)
     
     deep_link = f"t.me/free_suggest_bot?start=code_{code}"
-    text = f"<code>{deep_link}</code>\n\n" + messages['ru']['add_admin']
+    text = f"<code>{deep_link}</code>\n\n" + messages['add_admin']
 
     await call.message.answer(text=text,
                          reply_markup=types.InlineKeyboardMarkup(

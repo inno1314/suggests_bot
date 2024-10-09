@@ -31,7 +31,7 @@ async def get_premium(call: types.CallbackQuery, session: AsyncSession):
         else f"<i><b>активна до {end_date}</b></i>"
     )
     text += f"⏱Теущий статус: {sub_status}\n\n"
-    text += messages["ru"]["about_subscription"]
+    text += messages["about_subscription"]
     await call.message.edit_text(text, reply_markup=sub_types)
 
 
@@ -40,7 +40,7 @@ async def set_plan(call: types.CallbackQuery, state: FSMContext):
     await state.set_state(TopUpBalance.balance)
     await state.update_data(plan=str(call.data))
     await call.message.edit_text(
-        text=messages["ru"]["payment_method"], reply_markup=payment_methods
+        text=messages["payment_method"], reply_markup=payment_methods
     )
     await call.answer()
 

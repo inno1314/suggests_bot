@@ -58,6 +58,6 @@ async def process_yoomoney_payment(session: AsyncSession, call: types.CallbackQu
 
     # Время ожидания истекло
     await msg.edit_text(
-        text=messages['ru']['failed_payment'],
+        text=messages['failed_payment'],
         disable_web_page_preview=True)
 
