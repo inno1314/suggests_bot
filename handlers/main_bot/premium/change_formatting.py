@@ -9,8 +9,8 @@ from keyboards.inline import formatting_markup, make_formatting_markup
 from data.messages import messages
 
 default_texts = {
-    "start_msg_formatting": messages["ru"]["senders_start"],
-    "answer_msg_formatting": messages["ru"]["default_answer"],
+    "start_msg_formatting": messages['ru']['senders_start'],
+    "answer_msg_formatting": messages['ru']['default_answer'],
     "post_formatting": "<i>Не установлена</i>"
 }
 texts_for_admin = {
