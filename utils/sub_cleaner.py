@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 # from database.base_api import DataBaseApi
 logger = logging.getLogger(__name__)
 
+
 async def clean_subscription(session: AsyncSession, admin_id: int, db):
     """
     Отбирает у пользователя все преимущества платной подписки:
@@ -23,14 +24,13 @@ async def clean_subscription(session: AsyncSession, admin_id: int, db):
             logger.info(f"Бот {bot.id} был удален из БД")
             continue
 
-        await db.bot_api.update_bot_field(session, bot.id,
-                                          "is_premium", False)
-        await db.bot_api.update_bot_field(session, bot.id,
-                                      "post_formatting", None)
-        logger.info(f"Status is_premium and post formatting were deleted for bot {bot.id}")
+        await db.bot_api.update_bot_field(session, bot.id, "is_premium", False)
+        await db.bot_api.update_bot_field(session, bot.id, "post_formatting", None)
+        logger.info(
+            f"Status is_premium and post formatting were deleted for bot {bot.id}"
+        )
 
         admins = await db.bot_api.get_bots_admins(session, bot.id)
         for co_admin_id in admins[1:]:
             await db.bot_api.remove_admin(session, bot.id, co_admin_id)
             logger.info(f"Admin {co_admin_id} was deleted for bot {bot.id}")
-

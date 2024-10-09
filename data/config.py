@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from os import getenv
 from aiogram import types
 
-from database.base_api import DataBaseApi 
+from database.base_api import DataBaseApi
 
 load_dotenv()
 
@@ -19,14 +19,13 @@ DB_URL = "postgresql+asyncpg://inno:root@localhost/suggests_db"
 db = DataBaseApi(DB_URL)
 
 
-
 other_bots_commands = [
-        types.BotCommand(command="/start", description="Запустить нижнее меню"),
-        types.BotCommand(command="/rm", description="Очистить предложку"),
-        types.BotCommand(command="/help", description="Помощь"),
-        types.BotCommand(command="/banlist", description="Список заблокированных юзеров"),
-        types.BotCommand(command="/remove_keyboard", description="Удалить нижнее меню")
-    ]
+    types.BotCommand(command="/start", description="Запустить нижнее меню"),
+    types.BotCommand(command="/rm", description="Очистить предложку"),
+    types.BotCommand(command="/help", description="Помощь"),
+    types.BotCommand(command="/banlist", description="Список заблокированных юзеров"),
+    types.BotCommand(command="/remove_keyboard", description="Удалить нижнее меню"),
+]
 
 CREATORS = [575586402, 6435987938]
 

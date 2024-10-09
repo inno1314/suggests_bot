@@ -11,11 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 class isAdminQuery(BaseFilter):
-    async def __call__(self, call: CallbackQuery,
-                       session: AsyncSession):
-        admins = await db.bot_api.get_bots_admins(session=session,
-                               bot_id=call.bot.id)
-        # print(admins)
+    async def __call__(self, call: CallbackQuery, session: AsyncSession):
+        admins = await db.bot_api.get_bots_admins(session=session, bot_id=call.bot.id)
         sub = await db.subscription_api.get_subscription(session, admins[0])
 
         if sub is not None and sub.end_date < datetime.now(timezone.utc):
@@ -28,4 +25,3 @@ class isAdminQuery(BaseFilter):
             logger.info("CallbackQuery is considered to be from admin")
             return True
         return False
-

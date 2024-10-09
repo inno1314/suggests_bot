@@ -14,4 +14,3 @@ class isBotCreator(BaseFilter):
             logger.info("Message is considered to be from CREATOR")
             return True
         return False
-

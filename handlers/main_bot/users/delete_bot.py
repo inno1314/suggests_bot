@@ -13,9 +13,7 @@ router = Router()
 
 
 @router.callback_query(F.data[:3] == "del")
-async def delete_bot(call: types.CallbackQuery,
-                     bot: Bot,
-                     session: AsyncSession) -> Any:
+async def delete_bot(call: types.CallbackQuery, bot: Bot, session: AsyncSession) -> Any:
     bot_id = int(str(call.data)[4:])
     db_bot = await db.bot_api.get_bot(session=session, bot_id=bot_id)
     token = db_bot.token
@@ -36,13 +34,14 @@ async def delete_bot(call: types.CallbackQuery,
     await db.bot_api.delete_bot(session=session, bot_id=bot_user.id)
     logger.info(f"Deleted bot {bot_user.id} from database")
 
-    bots = await db.admin_api.get_admins_bots(session=session,
-                             admin_id=call.from_user.id)
+    bots = await db.admin_api.get_admins_bots(
+        session=session, admin_id=call.from_user.id
+    )
     markup = await bots_list(bots)
 
-    await call.answer(f"✅Бот {bot_user.username} был успешно остановлен и удалён!",
-                      show_alert=True)
+    await call.answer(
+        f"✅Бот {bot_user.username} был успешно остановлен и удалён!", show_alert=True
+    )
     return await call.message.edit_reply_markup(
-        inline_message_id=call.inline_message_id,
-        reply_markup=markup)
-
+        inline_message_id=call.inline_message_id, reply_markup=markup
+    )

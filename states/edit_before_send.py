@@ -1,5 +1,6 @@
 from aiogram.fsm.state import StatesGroup, State
 
 
-class Ads(StatesGroup):
+class EditBeforeSend(StatesGroup):
     editing = State()
+    sending = State()

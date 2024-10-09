@@ -19,8 +19,10 @@ router = Router()
 @router.callback_query(F.data == "mailing")
 async def ask_mailing(call: types.CallbackQuery, state: FSMContext):
     await state.set_state(Mailing.start)
-    await call.message.edit_text(text=messages['ru']['start_mailing'],
-                                 reply_markup=back_markup)
+    await call.message.edit_text(
+        text=messages["ru"]["start_mailing"], reply_markup=back_markup
+    )
+
 
 @router.message(Mailing.start)
 async def start_mailing(message: types.Message, bot: Bot, session: AsyncSession):
@@ -29,7 +31,7 @@ async def start_mailing(message: types.Message, bot: Bot, session: AsyncSession)
     # await db.ads_api.add_mailing_message(session, json_model, message.html_text)
     text = message.html_text
     link = image_uploader(message, BOT_TOKEN) if message.photo else None
-    
+
     bots = await db.bot_api.get_bots_for_mailing(session)
     bots_log = [bot.id for bot in bots]
     logger.info(f"Obtained from DB bot's IDs for mailing: {bots_log}")
@@ -40,15 +42,18 @@ async def start_mailing(message: types.Message, bot: Bot, session: AsyncSession)
         for user_id in users_to_mail:
             try:
                 if link is not None:
-                    await tg_bot.send_photo(chat_id=user_id, photo=link, caption=text,
-                                            parse_mode="HTML")
+                    await tg_bot.send_photo(
+                        chat_id=user_id, photo=link, caption=text, parse_mode="HTML"
+                    )
                 else:
-                    await tg_bot.send_message(chat_id=user_id, text=text,
-                                              parse_mode="HTML")
+                    await tg_bot.send_message(
+                        chat_id=user_id, text=text, parse_mode="HTML"
+                    )
                 # await restored_message.copy_to(chat_id=user_id).as_(tg_bot)
             except Exception as e:
                 await db.bot_api.change_user_status(session, user_id, False)
-                logger.info(f"An error occured while trying to send mailing message {e}")
+                logger.info(
+                    f"An error occured while trying to send mailing message {e}"
+                )
 
     await message.delete()
-
