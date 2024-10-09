@@ -57,7 +57,6 @@ async def get_edited_message(
             model = album_message.model_dump_json()
             await state.update_data({f"{index}message_model": model})
             if len(album_message.html_text) > 0:
-                print(album_message.html_text, type(album_message.html_text))
                 await state.update_data(html_text=album_message.html_text)
 
         await state.update_data(media_group_ids=[msg.message_id for msg in album])
@@ -112,7 +111,6 @@ async def send_to(call: types.CallbackQuery, state: FSMContext, session: AsyncSe
             restored_media = model.to_aiogram()
             media.append(restored_media)
 
-        print(data.get("html_text"), str(data.get("html_text")))
         caption = (
             str(data.get("html_text")) if data.get("html_text") is not None else ""
         )

@@ -35,8 +35,6 @@ async def channels_list(
             ]
         )
 
-    print(start_index, end_index, len(channels))
-
     if start_index == 0 and len(channels) > end_index:
         new_markup.inline_keyboard.append(
             [
