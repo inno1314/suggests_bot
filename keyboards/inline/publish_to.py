@@ -2,17 +2,24 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
 async def channels_list(
-    channels: list[dict], markup: InlineKeyboardMarkup, page: int = 0
+    channels: list[dict], markup: InlineKeyboardMarkup | None = None, page: int = 0
 ) -> InlineKeyboardMarkup:
     # Собираем кнопки из текущего разметки
     buttons = []
-    for row in markup.inline_keyboard[:1]:
-        for button in row:
-            buttons.append(button)
+    if markup is not None:
+        for row in markup.inline_keyboard[:1]:
+            for button in row:
+                buttons.append(button)
 
     # Создаем новую разметку с сохранением старых кнопок
     new_markup = InlineKeyboardMarkup(inline_keyboard=[])
     new_markup.inline_keyboard.append(buttons)
+    edit_button = (
+        [InlineKeyboardButton(text="✍️", callback_data=f"edit_before_send")]
+        if markup is not None
+        else [InlineKeyboardButton(text="❌ Отмена", callback_data=f"cancel_editing")]
+    )
+    new_markup.inline_keyboard.append(edit_button)
 
     channels_per_page = 2
     start_index = page * channels_per_page
