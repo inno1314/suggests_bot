@@ -11,6 +11,7 @@ from data.messages import messages
 default_texts = {
     "start_msg_formatting": messages["ru"]["senders_start"],
     "answer_msg_formatting": messages["ru"]["default_answer"],
+    "post_formatting": "<i>Не установлена</i>"
 }
 texts_for_admin = {
     "start_msg_formatting": messages["ru"]["start_msg_formatting"],
