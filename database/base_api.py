@@ -1,11 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine 
-from sqlalchemy.orm import selectinload
 
 from .model import Base
 
 from .bot import BotDatabaseApi
 from .admin import AdminDatabaseApi
 from .subscription import SubscriptionDatabaseApi
+from .payments import PaymentsDatabaseAPI
 from .sender import SenderDatabaseApi
 from .channel import ChannelDatabaseApi
 from .message import MessageDatabaseApi
@@ -22,6 +22,7 @@ class DataBaseApi:
         self.bot_api = BotDatabaseApi(self.session)
         self.admin_api = AdminDatabaseApi(self.session)
         self.subscription_api = SubscriptionDatabaseApi(self.session)
+        self.payments_api = PaymentsDatabaseAPI(self.session)
         self.sender_api = SenderDatabaseApi(self.session)
         self.channel_api = ChannelDatabaseApi(self.session)
         self.message_api = MessageDatabaseApi(self.session)

@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete
+from sqlalchemy import select
+from typing import Any
 
 from .base_class import BaseDBApi
 from .model import SuggestedMessage
@@ -10,7 +11,7 @@ class MessageDatabaseApi(BaseDBApi):
     async def add_message(self, session: AsyncSession,
                           message_id: int, sender_id: int,
                           chat_id: int, bot_id: int,
-                          data: any, html_text: str,
+                          data: Any, html_text: str,
                           media_group_id: str | None = '',
                           group_id: str | None = None):
         """
