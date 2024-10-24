@@ -74,7 +74,7 @@ class Payments(Base):
     __tablename__ = 'payments'
 
     payment_id: Mapped[str] = mapped_column(String, primary_key=True)
-    user_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    user_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
     amount: Mapped[float] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String, nullable=False, default='created')
     service: Mapped[str] = mapped_column(String, nullable=False)
