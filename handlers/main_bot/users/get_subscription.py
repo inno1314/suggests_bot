@@ -24,13 +24,13 @@ async def get_premium(call: types.CallbackQuery, session: AsyncSession):
     if sub is not None:
         date_object = datetime.strptime(str(sub.end_date), "%Y-%m-%d %H:%M:%S.%f%z")
         end_date = date_object.strftime("%d.%m.%Y %H:%M")
-    text = '⭐️<b>Подписка "PRO"</b>\n\n'
+    text = '<blockquote><b>🪄 Подписка "PRO"</b></blockquote>\n\n'
     sub_status = (
-        "<i><b>не активна</b></i>"
+        "<i>не активна</i>"
         if end_date is None
-        else f"<i><b>активна до {end_date}</b></i>"
+        else f"<i>активна до {end_date}</i>"
     )
-    text += f"⏱Теущий статус: {sub_status}\n\n"
+    text += f"<b>⏱Теущий статус:</b> {sub_status}\n\n"
     text += messages["about_subscription"]
     await call.message.edit_text(text, reply_markup=sub_types)
 

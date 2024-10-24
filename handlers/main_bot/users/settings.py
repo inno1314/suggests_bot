@@ -24,8 +24,8 @@ async def bot_settings(
     await state.update_data(bot_id=bot_id)
 
     bot = await db.bot_api.get_bot(session, bot_id)
-    text = "<b>Настройки бота</b>\n\n"
-    text += f"Бот: <i><b>{html.link(bot.name, bot.url)}</b></i>\n\n"
+    text = "<blockquote><b>⚙️ Настройки бота</b></blockquote>\n\n"
+    text += f"<b>Бот: <i>{html.link(bot.name, bot.url)}</i></b>\n\n"
     text += messages["bot_settings"]
     markup = await setts_buttons(session, bot_id)
     await call.message.edit_text(text=text, reply_markup=markup)

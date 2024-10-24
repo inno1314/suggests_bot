@@ -9,7 +9,7 @@ async def bots_list(bots: list[Bot], page: int = 0) -> InlineKeyboardMarkup:
     if len(bots) <= 10:
         builder.row(
             InlineKeyboardButton(
-                text="ДОБАВИТЬ НОВОГО БОТА", callback_data="create_bot"
+                text="🤖 ДОБАВИТЬ НОВОГО БОТА", callback_data="create_bot"
             )
         )
 

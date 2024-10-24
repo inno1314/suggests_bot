@@ -17,7 +17,7 @@ async def db_subscriptions_checker(bot: Bot, db):
     for sub in subscriptions:
         days_left = (sub.end_date - datetime.now(timezone.utc)).days
         if 0 <= days_left <= 3:
-            text = f"<b>⚠️До истечения подписки осталось {days_left} дней!</b>\n\n"
+            text = f"<b>⚠️ До истечения подписки осталось {days_left} дня!</b>\n\n"
             text += messages["expiring_sub"]
             await bot.send_message(
                 chat_id=sub.admin_id,
