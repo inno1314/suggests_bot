@@ -45,12 +45,12 @@ async def set_plan(call: types.CallbackQuery, state: FSMContext):
     await call.answer()
 
 
-@router.callback_query(F.data.in_(["yoomoney", "aaio", "crypto_bot"]))
+@router.callback_query(F.data.in_(["yoomoney", "aaio", "cryptobot", "nicepay"]))
 async def set_pay_method(
     call: types.CallbackQuery, state: FSMContext, session: AsyncSession
 ):
     data = await state.get_data()
-    plan = data.get("plan")
+    plan = data["plan"]
     method = call.data
 
     plan_prices = {"month": 159, "three_months": 429, "half_year": 799, "year": 1299}
@@ -58,8 +58,13 @@ async def set_pay_method(
 
     logger.info(f"Chosen options - Plan: {plan}, Method: {method}, Price: {price}")
 
+    if method == "nicepay" and price <= 250:
+        return await call.answer(
+            text="Сумма должна быть больше чем 250 RUB.", show_alert=True
+        )
+
     await process_payment(
-        session=session, call=call, plan=plan, payment_amount=price, payment_type=method
+        session=session, call=call, plan=plan, payment_amount=price, system=method
     )
 
     await state.clear()

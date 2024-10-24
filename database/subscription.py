@@ -2,12 +2,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from sqlalchemy.engine import Result
 from datetime import datetime, timedelta, timezone
+from typing import Literal
 
 from .base_class import BaseDBApi
 from .model import Subscription
 
+
 class SubscriptionDatabaseApi(BaseDBApi):
-    async def add_subscription(self, session: AsyncSession, admin_id: int, subscription_type: str) -> datetime:
+    async def add_subscription(
+        self,
+        session: AsyncSession,
+        admin_id: int,
+        subscription_type: Literal["month", "three_months", "half_year", "year"],
+    ) -> datetime:
         """
         Добавляет подписку в БД
 
@@ -19,15 +26,13 @@ class SubscriptionDatabaseApi(BaseDBApi):
             "month": timedelta(days=30),
             "three_months": timedelta(days=90),
             "half_year": timedelta(days=180),
-            "year": timedelta(days=365)
+            "year": timedelta(days=365),
         }
         current_sub = await self.get_subscription(session, admin_id)
         if current_sub is None:
             end_date = datetime.now(timezone.utc) + duration_map[subscription_type]
             subscription = Subscription(
-                admin_id = admin_id,
-                end_date = end_date,
-                plan = subscription_type
+                admin_id=admin_id, end_date=end_date, plan=subscription_type
             )
             session.add(subscription)
         else:
@@ -43,15 +48,19 @@ class SubscriptionDatabaseApi(BaseDBApi):
         await session.commit()
         return end_date
 
-    async def get_subscription(self, session: AsyncSession,
-                                 admin_id: int) -> Subscription | None:
+    async def get_subscription(
+        self, session: AsyncSession, admin_id: int
+    ) -> Subscription | None:
         """
         Проверяет, есть ли у администратора активная подписка
 
         :param admin_id: Telegram ID администратора
         :return: Subscription если подписка активна, иначе None
         """
-        query = select(Subscription).where(Subscription.admin_id == admin_id, Subscription.end_date > datetime.now(timezone.utc))
+        query = select(Subscription).where(
+            Subscription.admin_id == admin_id,
+            Subscription.end_date > datetime.now(timezone.utc),
+        )
         result: Result = await session.execute(query)
         sub: Subscription | None = result.scalars().first()
         return sub
@@ -85,10 +94,10 @@ class SubscriptionDatabaseApi(BaseDBApi):
         subscriptions = result.scalars().all()
 
         price_map = {
-        "month": 159.0,
-        "three_months": 143.0,
-        "half_year": 133.0,
-        "year": 108.25
+            "month": 159.0,
+            "three_months": 143.0,
+            "half_year": 133.0,
+            "year": 108.25,
         }
         income = 0
 
@@ -96,4 +105,3 @@ class SubscriptionDatabaseApi(BaseDBApi):
             income += price_map.get(sub.plan, 0.0)
 
         return income
-
