@@ -13,7 +13,6 @@ router = Router()
 
 @router.callback_query(F.data == "edit_ads")
 async def view_ads(call: types.CallbackQuery, session: AsyncSession, state: FSMContext):
-    """TODO: Добавить возможность возвращать значение по умолчанию"""
     current_ad_message = await db.ads_api.get_ad_message(session)
     if current_ad_message is not None:
         text = current_ad_message.html_text + messages["edit_ads"]
