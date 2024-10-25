@@ -6,10 +6,19 @@ from sqlalchemy import select, update
 from .base_class import BaseDBApi
 from .model import Bot, Admin, Sender
 
+
 class BotDatabaseApi(BaseDBApi):
-    async def add_bot(self, session: AsyncSession, bot_id: int,
-                      name: str, language_code: str, admin_id: int,
-                      url: str, token: str) -> Bot:
+    async def add_bot(
+        self,
+        session: AsyncSession,
+        bot_id: int,
+        name: str,
+        language_code: str,
+        admin_id: int,
+        url: str,
+        token: str,
+        is_premium: bool | None = False,
+    ) -> Bot:
         """
         Добавляет бота в БД
 
@@ -19,8 +28,15 @@ class BotDatabaseApi(BaseDBApi):
         :param url: https://t.me/ (будет добавлено) + username
         :param token: Токен бота
         """
-        bot = Bot(id=bot_id, name=name, url="https://t.me/" + url,
-                  language_code=language_code, token=token, creator_id=admin_id)
+        bot = Bot(
+            id=bot_id,
+            name=name,
+            url="https://t.me/" + url,
+            language_code=language_code,
+            token=token,
+            creator_id=admin_id,
+            is_premium=is_premium,
+        )
 
         query = select(Admin).where(Admin.id == admin_id)
         result = await session.execute(query)
@@ -31,8 +47,7 @@ class BotDatabaseApi(BaseDBApi):
         await session.commit()
         return bot
 
-    async def get_bot(self, session: AsyncSession,
-                      bot_id: int) -> Bot:
+    async def get_bot(self, session: AsyncSession, bot_id: int) -> Bot:
         """
         Вовращает бота по ID
 
@@ -52,21 +67,21 @@ class BotDatabaseApi(BaseDBApi):
         bots = result.scalars().all()
         return bots
 
-    async def get_senders_for_mailing(self, session: AsyncSession,
-                                      bot_id: int) -> list[int]:
+    async def get_senders_for_mailing(
+        self, session: AsyncSession, bot_id: int
+    ) -> list[int]:
         """
         Возвращает список ID пользователей для рассылки
         :param bot_id: Telegram ID бота
         """
-        query = select(Bot).options(
-            selectinload(Bot.suggesters)
-        ).where(Bot.id == bot_id)
+        query = (
+            select(Bot).options(selectinload(Bot.suggesters)).where(Bot.id == bot_id)
+        )
         result: Result = await session.execute(query)
         bot = result.scalars().one()
         return [s.id for s in bot.suggesters if s.is_active]
 
-    async def delete_bot(self, session: AsyncSession,
-                         bot_id: int) -> None:
+    async def delete_bot(self, session: AsyncSession, bot_id: int) -> None:
         """
         Удаляет бота по его Telegram ID
 
@@ -79,44 +94,36 @@ class BotDatabaseApi(BaseDBApi):
         await session.flush()
         await session.commit()
 
-    async def update_bot_field(self, session: AsyncSession, bot_id: int,
-                               field_name: str, new_value) -> None:
+    async def update_bot_field(
+        self, session: AsyncSession, bot_id: int, field_name: str, new_value
+    ) -> None:
         """
         Обновляет произвольное поле бота в базе данных.
-        
+
         :param session: Сессия базы данных.
         :param bot_id: ID бота для обновления.
         :param field_name: Имя поля, которое нужно обновить.
         :param new_value: Новое значение для поля.
         """
-        query = (
-            update(Bot)
-            .where(Bot.id == bot_id)
-            .values({field_name: new_value})
-        )
+        query = update(Bot).where(Bot.id == bot_id).values({field_name: new_value})
 
         await session.execute(query)
         await session.commit()
 
-    async def get_bots_admins(self, session: AsyncSession,
-                              bot_id: int) -> list[int]:
+    async def get_bots_admins(self, session: AsyncSession, bot_id: int) -> list[int]:
         """
         Получает Telegram ID администраторов бота
 
         :param bot_id: Telegram ID бота
         :return: список чисел
         """
-        query = select(Bot).options(
-            selectinload(Bot.admins)
-        ).where(Bot.id == bot_id)
+        query = select(Bot).options(selectinload(Bot.admins)).where(Bot.id == bot_id)
         result: Result = await session.execute(query)
         bot: Bot = result.scalars().first()
         admins = [admin.id for admin in bot.admins if admin.is_active]
         return admins
 
-
-    async def get_banlist(self, session: AsyncSession,
-                          bot_id: int) -> list[int]:
+    async def get_banlist(self, session: AsyncSession, bot_id: int) -> list[int]:
         """
         Возвращает список заблокированных пользователей бота
         :param bot_id: Telegram ID бота
@@ -125,18 +132,15 @@ class BotDatabaseApi(BaseDBApi):
         result: Result = await session.execute(query)
         bot: Bot = result.scalars().first()
         return bot.banlist
-    
-    async def add_admin(self, session: AsyncSession, bot_id: int,
-                        admin_id: int):
+
+    async def add_admin(self, session: AsyncSession, bot_id: int, admin_id: int):
         """
         Добавляет администратора существующему боту
 
         :param bot_id: Telegram ID Бота
         :param admin_id: Telegram ID администратора
         """
-        query = select(Bot).options(
-            selectinload(Bot.admins)
-        ).where(Bot.id == bot_id)
+        query = select(Bot).options(selectinload(Bot.admins)).where(Bot.id == bot_id)
         result: Result = await session.execute(query)
         bot: Bot = result.scalars().first()
 
@@ -146,17 +150,14 @@ class BotDatabaseApi(BaseDBApi):
         bot.admins.append(admin)  # change to admins.remove for delete
         await session.commit()
 
-    async def remove_admin(self, session: AsyncSession, bot_id: int,
-                        admin_id: int):
+    async def remove_admin(self, session: AsyncSession, bot_id: int, admin_id: int):
         """
         Удаляет пользователя из списка администраторов
 
         :param bot_id: Telegram ID Бота
         :param admin_id: Telegram ID администратора
         """
-        query = select(Bot).options(
-            selectinload(Bot.admins)
-        ).where(Bot.id == bot_id)
+        query = select(Bot).options(selectinload(Bot.admins)).where(Bot.id == bot_id)
         result: Result = await session.execute(query)
         bot: Bot = result.scalars().first()
 
@@ -166,8 +167,9 @@ class BotDatabaseApi(BaseDBApi):
         bot.admins.remove(admin)
         await session.commit()
 
-    async def change_user_status(self, session: AsyncSession,
-                                 user_id: int, new_status: bool):
+    async def change_user_status(
+        self, session: AsyncSession, user_id: int, new_status: bool
+    ):
         # Проверяем, находится ли пользователь в таблице Admin
         query = select(Admin).where(Admin.id == user_id)
         result = await session.execute(query)
