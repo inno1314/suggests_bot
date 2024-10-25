@@ -16,3 +16,15 @@ main_admins_markup = InlineKeyboardMarkup(
 back_markup = InlineKeyboardMarkup(
     inline_keyboard=[[InlineKeyboardButton(text="🔙", callback_data="to_admins_menu")]]
 )
+
+ads_markup = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [
+            InlineKeyboardButton(
+                text="❌ Вернуть значение по умолчанию",
+                callback_data=f"clear_ads",
+            )
+        ],
+        [InlineKeyboardButton(text="🔙", callback_data=f"to_admins_menu")],
+    ]
+)

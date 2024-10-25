@@ -1,6 +1,6 @@
 import logging
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import insert, select, update
 from datetime import date
 from typing import Any
 
@@ -9,18 +9,16 @@ from .model import AdMessageViews, AdMessage, MailingMessage
 
 logger = logging.getLogger(__name__)
 
+
 class AdsDatabaseApi(BaseDBApi):
     async def count_views(self, session: AsyncSession):
         today = date.today()
         query = select(AdMessageViews).where(AdMessageViews.view_date == today)
         result = await session.execute(query)
         message_view = result.scalar_one_or_none()
-    
+
         if message_view is None:
-            message_view = AdMessageViews(
-                view_date = today,
-                view_count = 1
-            )
+            message_view = AdMessageViews(view_date=today, view_count=1)
             session.add(message_view)
             logger.info("Added today's message view in DB")
         else:
@@ -35,13 +33,11 @@ class AdsDatabaseApi(BaseDBApi):
 
         await session.commit()
 
-    async def add_mailing_message(self, session: AsyncSession,
-                              data: Any, html_text: str):
+    async def add_mailing_message(
+        self, session: AsyncSession, data: Any, html_text: str
+    ):
         message = MailingMessage(
-            html_text = html_text,
-            inline_text = "",
-            inline_url = "",
-            message_data = data
+            html_text=html_text, inline_text="", inline_url="", message_data=data
         )
         session.add(message)
         logger.info("Added new mailing message in DB")
@@ -53,14 +49,23 @@ class AdsDatabaseApi(BaseDBApi):
         ad_message = result.scalar_one_or_none()
         return ad_message
 
-    async def edit_ad_message(self, session: AsyncSession,
-                              html_text: str, link: str | None = None):
-        query = (
-            update(AdMessage)
-            .where(AdMessage.id == 1)
-            .values(html_text=html_text, photo_link=link)
-        )
-        await session.execute(query)
+    async def edit_ad_message(
+        self, session: AsyncSession, html_text: str, link: str | None = None
+    ):
+        ad_message = await self.get_ad_message(session)
+        if ad_message is not None:
+            query = (
+                update(AdMessage)
+                .where(AdMessage.id == 1)
+                .values(html_text=html_text, photo_link=link)
+            )
+            await session.execute(query)
+        else:
+            message = AdMessage(
+                id=1,
+                html_text=html_text,
+                photo_link=link,
+            )
+            session.add(message)
         logger.info("Edited mailing message in DB")
         await session.commit()
-

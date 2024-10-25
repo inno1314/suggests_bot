@@ -4,5 +4,5 @@ __pycache__/
 .env
 .idea
 logs.txt
-view_count_chart.png
+*.png
 *.sql
