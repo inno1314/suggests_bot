@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timezone
 from typing import Any
 from aiogram import Bot, html, types, Router, F
 from aiogram.client.default import DefaultBotProperties
@@ -85,6 +86,12 @@ async def add_bot(
     user = message.from_user
 
     admin = await db.admin_api.get_admin(session=session, admin_id=user.id)
+    sub = await db.subscription_api.get_subscription(session, user.id)
+    is_premium = (
+        True
+        if (sub is not None and sub.end_date > datetime.now(timezone.utc))
+        else False
+    )
     try:
         bot = await db.bot_api.add_bot(
             session=session,
@@ -94,6 +101,7 @@ async def add_bot(
             language_code=admin.language_code,
             admin_id=admin.id,
             token=token,
+            is_premium=is_premium,
         )
     except:
         logger.info("Error: Token is already exists in database")
