@@ -1,7 +1,6 @@
 import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 
-# from database.base_api import DataBaseApi
 logger = logging.getLogger(__name__)
 
 
@@ -26,6 +25,8 @@ async def clean_subscription(session: AsyncSession, admin_id: int, db):
 
         await db.bot_api.update_bot_field(session, bot.id, "is_premium", False)
         await db.bot_api.update_bot_field(session, bot.id, "post_formatting", None)
+        await db.bot_api.update_bot_field(session, bot.id, "start_message", None)
+        await db.bot_api.update_bot_field(session, bot.id, "answer_message", None)
         logger.info(
             f"Status is_premium and post formatting were deleted for bot {bot.id}"
         )

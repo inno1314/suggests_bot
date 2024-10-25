@@ -1,17 +1,30 @@
 from datetime import datetime, date, timezone
-from sqlalchemy import Table, Column, Boolean, BigInteger, String, ARRAY, \
-    ForeignKey, DateTime, Date, JSON, Text, Integer
+from sqlalchemy import (
+    Table,
+    Column,
+    Boolean,
+    BigInteger,
+    String,
+    ARRAY,
+    ForeignKey,
+    DateTime,
+    Date,
+    JSON,
+    Text,
+    Integer,
+)
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
 admin_bot_association = Table(
-    'admin_bot_association',
+    "admin_bot_association",
     Base.metadata,
-    Column('admin_id', BigInteger, ForeignKey('admin.id'), primary_key=True),
-    Column('bot_id', BigInteger, ForeignKey('bot.id'), primary_key=True)
+    Column("admin_id", BigInteger, ForeignKey("admin.id"), primary_key=True),
+    Column("bot_id", BigInteger, ForeignKey("bot.id"), primary_key=True),
 )
+
 
 class Bot(Base):
     __tablename__ = "bot"
@@ -20,24 +33,28 @@ class Bot(Base):
     name: Mapped[str] = mapped_column(String(255))
     url: Mapped[str] = mapped_column(String(255))
     language_code: Mapped[str] = mapped_column(String(2))
-    banlist: Mapped[list[int]] = mapped_column(ARRAY(BigInteger), default=list,
-                                               nullable=True)
-    sign_messages: Mapped[bool] = mapped_column(Boolean, default=True,
-                                                server_default="True")
+    banlist: Mapped[list[int]] = mapped_column(
+        ARRAY(BigInteger), default=list, nullable=True
+    )
+    sign_messages: Mapped[bool] = mapped_column(
+        Boolean, default=True, server_default="True"
+    )
     post_formatting: Mapped[str] = mapped_column(String(255), nullable=True)
     start_message: Mapped[str] = mapped_column(String(255), nullable=True)
     answer_message: Mapped[str] = mapped_column(String(255), nullable=True)
     token: Mapped[str] = mapped_column(String(255), unique=True)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True,
-                                            server_default="True")
-    is_premium: Mapped[bool] = mapped_column(Boolean, default=False,
-                                            server_default="False")
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, default=True, server_default="True"
+    )
+    is_premium: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default="False"
+    )
 
     channels: Mapped["Channels"] = relationship(back_populates="bot")
-    creator_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('admin.id'))
-    admins: Mapped[list["Admin"]] = relationship("Admin",
-                                                 secondary=admin_bot_association,
-                                                 back_populates="bots")
+    creator_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("admin.id"))
+    admins: Mapped[list["Admin"]] = relationship(
+        "Admin", secondary=admin_bot_association, back_populates="bots"
+    )
     suggesters: Mapped[list["Sender"]] = relationship(back_populates="bot")
     messages: Mapped["SuggestedMessage"] = relationship(back_populates="bot")
 
@@ -48,14 +65,17 @@ class Admin(Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     language_code: Mapped[str] = mapped_column(String(2))
     name: Mapped[str] = mapped_column(String(255), nullable=True)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True,
-                                            server_default="True")
-    label: Mapped[str] = mapped_column(String(255), nullable=True, 
-                                       default='None')
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, default=True, server_default="True"
+    )
+    label: Mapped[str] = mapped_column(String(255), nullable=True, default="None")
 
-    bots: Mapped[list["Bot"]] = relationship("Bot", secondary=admin_bot_association,
-                                             back_populates="admins")
-    subscriptions: Mapped[list["Subscription"]] = relationship("Subscription", back_populates="admin")
+    bots: Mapped[list["Bot"]] = relationship(
+        "Bot", secondary=admin_bot_association, back_populates="admins"
+    )
+    subscriptions: Mapped[list["Subscription"]] = relationship(
+        "Subscription", back_populates="admin"
+    )
 
 
 class Subscription(Base):
@@ -63,7 +83,9 @@ class Subscription(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     admin_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("admin.id"))
-    start_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(timezone.utc))
+    start_date: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.now(timezone.utc)
+    )
     end_date: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     plan: Mapped[str] = mapped_column(String(255))
 
@@ -71,12 +93,12 @@ class Subscription(Base):
 
 
 class Payments(Base):
-    __tablename__ = 'payments'
+    __tablename__ = "payments"
 
     payment_id: Mapped[str] = mapped_column(String, primary_key=True)
     user_id: Mapped[int] = mapped_column(Integer, nullable=False)
     amount: Mapped[float] = mapped_column(Integer, nullable=False)
-    status: Mapped[str] = mapped_column(String, nullable=False, default='created')
+    status: Mapped[str] = mapped_column(String, nullable=False, default="created")
     service: Mapped[str] = mapped_column(String, nullable=False)
     date: Mapped[str] = mapped_column(String, nullable=False)
 
@@ -86,9 +108,12 @@ class Sender(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     first_name: Mapped[str] = mapped_column(String(255))
-    bot_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("bot.id", ondelete='SET NULL'), nullable=True)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True,
-                                            server_default="True")
+    bot_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("bot.id", ondelete="SET NULL"), nullable=True
+    )
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, default=True, server_default="True"
+    )
     bot: Mapped["Bot"] = relationship(back_populates="suggesters")
     suggests: Mapped[list["SuggestedMessage"]] = relationship(back_populates="sender")
 
@@ -96,8 +121,9 @@ class Sender(Base):
 class Channels(Base):
     __tablename__ = "channels"
 
-    primary_key: Mapped[int] = mapped_column(BigInteger, primary_key=True,
-                                             autoincrement=True)
+    primary_key: Mapped[int] = mapped_column(
+        BigInteger, primary_key=True, autoincrement=True
+    )
     id: Mapped[int] = mapped_column(BigInteger, unique=False)
     name: Mapped[str] = mapped_column(String(255))
     bot_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("bot.id"), nullable=True)
@@ -108,17 +134,15 @@ class Channels(Base):
 class SuggestedMessage(Base):
     __tablename__ = "suggested_message"
 
-    primary_key: Mapped[int] = mapped_column(BigInteger, primary_key=True,
-                                             autoincrement=True)
+    primary_key: Mapped[int] = mapped_column(
+        BigInteger, primary_key=True, autoincrement=True
+    )
     id: Mapped[int] = mapped_column(BigInteger)
     chat_id: Mapped[int] = mapped_column(BigInteger)
     media_group_id: Mapped[str] = mapped_column(String(255))
     group_id: Mapped[str] = mapped_column(String(255))
-    sender_id: Mapped[int] = mapped_column(BigInteger,
-                                           ForeignKey("sender.id"))
-    bot_id: Mapped[int] = mapped_column(BigInteger,
-                                        ForeignKey("bot.id"),
-                                        nullable=True)
+    sender_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("sender.id"))
+    bot_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("bot.id"), nullable=True)
     html_text: Mapped[str] = mapped_column(Text)
     message_data: Mapped[dict] = mapped_column(JSON)
 
@@ -131,9 +155,9 @@ class InviteCodes(Base):
 
     code: Mapped[str] = mapped_column(String(255), primary_key=True)
     bot_id: Mapped[int] = mapped_column(BigInteger)
-    is_active: Mapped[bool] = mapped_column(Boolean,
-                                            default=True,
-                                            server_default="True")
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, default=True, server_default="True"
+    )
 
 
 class AdMessageViews(Base):
@@ -161,4 +185,3 @@ class MailingMessage(Base):
     inline_text: Mapped[str] = mapped_column(String(255))
     inline_url: Mapped[str] = mapped_column(String(255))
     message_data: Mapped[dict] = mapped_column(JSON)
-

@@ -6,6 +6,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from data.config import db
+from utils import clean_subscription
 from states import GiveSub
 
 logger = logging.getLogger(__name__)
@@ -55,17 +56,21 @@ async def give_sub_to_user_id(
 
     user_id = message.text
     if user_id is None or not user_id.isnumeric():
-        return await message.answer("Некорректный ввод")
+        await message.answer("Некорректный ввод")
+        return await state.clear()
+
     else:
         admin_id = int(user_id)
 
     admin = await db.admin_api.get_admin(session, admin_id)
     if admin is None:
-        return await message.answer("Пользователь не найден")
+        await message.answer("Пользователь не найден")
+        return await state.clear()
 
     if plan == "clear_sub":
-        await db.subscription_api.clean_subscriptions(session, admin_id)
-        return await message.answer("Подписка обнулена")
+        await clean_subscription(session, admin_id, db)
+        await message.answer("Подписка обнулена")
+        return await state.clear()
 
     await db.subscription_api.add_subscription(
         session, admin_id, subscription_type=plan
