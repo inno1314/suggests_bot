@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from yoomoney import Quickpay, Client
 from aiogram import types
 
-from data.config import db, YOOMONEY_TOKEN
+from data.config import db, YOOMONEY_TOKEN, YOOMONEY_WALLET
 from data.messages import messages
 from keyboards.inline import create_link_keyboard
 from payments.successful_payment import successful_payment
@@ -23,9 +23,9 @@ async def process_yoomoney_payment(session: AsyncSession, call: types.CallbackQu
     start_label = await db.admin_api.assign_admin_label(session, admin_id)
 
     quick_pay = Quickpay(
-        receiver='410017428212005',
+        receiver=YOOMONEY_WALLET,
         quickpay_form='shop',
-        targets='Test',
+        targets='Цифровая услуга',
         paymentType='SB',
         sum=price,
         label=start_label
