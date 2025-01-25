@@ -6,3 +6,4 @@ __pycache__/
 logs.txt
 *.png
 *.sql
+*.DS_Store
