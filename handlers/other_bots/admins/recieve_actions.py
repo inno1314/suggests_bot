@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from models.message import MessageModel
 from data.config import db
 from data.messages import messages
-from utils import restore_album
-from keyboards.inline import channels_list
+from utils import restore_album, make_new_album
+from keyboards.inline import channels_list, ok_button
 from states import PublishMedia
 
 logger = logging.getLogger(__name__)
@@ -22,20 +22,35 @@ async def answer_sender(
 ):
     bot: Bot = message.bot
     sender_id = await db.sender_api.get_sender_by_message(
-        session=session, message_id=message.reply_to_message.message_id
+        session=session, message_id=message.reply_to_message.message_id, bot_id=bot.id
     )
-
-    await bot.send_message(
-        chat_id=sender_id, text="Администрация ответила на ваше сообщение:"
-    )
-
-    if album:
-        album.sort(key=lambda m: m.message_id)
-        new_album = make_new_album(album, "")
-        await bot.send_media_group(chat_id=sender_id, media=new_album)
+    if sender_id is None:
+        await message.delete()
+        await message.answer(
+            "🚫 Не удалось отправить сообщение получателю!", reply_markup=ok_button
+        )
         return
 
-    await message.copy_to(chat_id=sender_id)
+    try:
+        await bot.send_message(
+            chat_id=sender_id, text="Администрация ответила на ваше сообщение:"
+        )
+
+        if album:
+            album.sort(key=lambda m: m.message_id)
+            new_album = make_new_album(album, "")
+            await bot.send_media_group(chat_id=sender_id, media=new_album)
+            return
+
+        await message.copy_to(chat_id=sender_id)
+    except Exception as e:
+        logger.info(f"Unable to send message to sender {sender_id}: {e}")
+        await message.delete()
+        await message.answer(
+            "🚫 Не удалось отправить сообщение получателю!", reply_markup=ok_button
+        )
+        return
+
     await message.delete()
 
 
@@ -110,6 +125,7 @@ async def send_to(call: types.CallbackQuery, session: AsyncSession, state: FSMCo
     group_id = str(data.get("group_id"))
 
     group = await db.message_api.get_messages_by_group_id(session, bot.id, group_id)
+    group = sorted(group, key=lambda msg: msg.id)
     sender_id = group[0].sender_id
     channel = await db.channel_api.get_channel(session, chat_id, bot.id)
     db_bot = await db.bot_api.get_bot(session, bot.id)
@@ -134,6 +150,7 @@ async def send_to(call: types.CallbackQuery, session: AsyncSession, state: FSMCo
         media_group = await db.message_api.get_messages_by_media_group_id(
             session, bot.id, call.from_user.id, group[0].media_group_id
         )
+        media_group = sorted(media_group, key=lambda msg: msg.id)
 
         media = list()
         for msg in media_group:

@@ -1,3 +1,4 @@
+from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from sqlalchemy.orm import selectinload
@@ -49,14 +50,21 @@ class SenderDatabaseApi(BaseDBApi):
         return sender
 
     async def get_sender_by_message(self, session: AsyncSession,
-                                    message_id: int) -> int:
+                                    message_id: int, bot_id: int) -> Optional[int]:
         """
         Возвращает ID отправителя по ID сообщения
 
         :param message_id: Telegram ID сообщеня
         """
-        query = select(SuggestedMessage).where(SuggestedMessage.id == message_id)
+        query = select(SuggestedMessage).where(
+            SuggestedMessage.id == message_id,
+            SuggestedMessage.bot_id == bot_id
+        )
         message: SuggestedMessage = await session.scalar(query)
+
+        if message is None:
+            return None
+
         return message.sender_id
 
     async def change_block_status(self, session: AsyncSession,
