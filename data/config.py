@@ -27,7 +27,8 @@ other_bots_commands = [
     types.BotCommand(command="/remove_keyboard", description="Удалить нижнее меню"),
 ]
 
-CREATORS = [575586402, 6435987938]
+# CREATORS = [575586402, 6435987938]
+CREATORS = [6530216916, 6815557771]
 
 YOOMONEY_TOKEN = str(getenv("YOOMONEY_TOKEN"))
 YOOMONEY_WALLET = str(getenv('YOOMONEY_WALLET'))

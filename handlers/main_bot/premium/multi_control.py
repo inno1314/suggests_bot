@@ -42,7 +42,7 @@ async def add_admin(call: types.CallbackQuery, state: FSMContext,
     bot_id = int(data.get("bot_id"))
     code = await db.codes_api.add_code(session, bot_id)
     
-    deep_link = f"t.me/free_suggest_bot?start=code_{code}"
+    deep_link = f"t.me/free_subfeed_bot?start=code_{code}"
     text = f"<code>{deep_link}</code>\n\n" + messages['add_admin']
 
     await call.message.answer(text=text,
@@ -51,4 +51,3 @@ async def add_admin(call: types.CallbackQuery, state: FSMContext,
                          types.InlineKeyboardButton(
                          text="OK", callback_data="OK")]]))
     await call.answer()
-

@@ -1,3 +1,4 @@
+import logging
 from aiogram import html, types, Router, F
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,6 +9,7 @@ from states import BotSettings
 from keyboards.inline import formatting_markup, make_formatting_markup, ok_button
 from data.messages import messages
 
+logger = logging.getLogger(__name__)
 default_texts = {
     "start_msg_formatting": messages["senders_start"],
     "answer_msg_formatting": messages["default_answer"],
@@ -109,9 +111,10 @@ async def set_new_formatting(
         await db.bot_api.update_bot_field(
             session, bot_id, db_fields[formatting_field], new_formatting
         )
-    except:
+    except Exception as e:
+        logger.info(f"Error while changing post_formatting: {e}")
         return await message.answer(
-            f"{html.bold('❗️ Длина строки не должна превышать 255 символов!')}",
+            f"{html.bold('❗️Не удалось добавить ваше сообщение!')}",
             reply_markup=ok_button,
         )
 
