@@ -16,5 +16,5 @@ async def start(message: types.Message):
     )
 
     await message.answer(
-        f"ℹ️ Бот запущен, нижняя клавиатура загружена!", reply_markup=main_menu
+        "ℹ️ Бот запущен, нижняя клавиатура загружена!", reply_markup=main_menu
     )

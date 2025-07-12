@@ -18,9 +18,6 @@ async def delete_bot(call: types.CallbackQuery, bot: Bot, session: AsyncSession)
     token = db_bot.token
     bot = Bot(token=token, session=bot.session)
 
-    # admins = await db.bot_api.get_bots_admins(session=session,
-    #                            bot_id=bot_id)
-
     if not await is_main_admin(call, session, db, bot_id):
         return
 

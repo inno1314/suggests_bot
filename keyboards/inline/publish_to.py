@@ -15,7 +15,7 @@ async def channels_list(
     new_markup = InlineKeyboardMarkup(inline_keyboard=[])
     new_markup.inline_keyboard.append(buttons)
     edit_button = (
-        [InlineKeyboardButton(text="✍️", callback_data=f"edit_before_send")]
+        [InlineKeyboardButton(text="✍️", callback_data="edit_before_send")]
         if markup is not None
         else []
     )

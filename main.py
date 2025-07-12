@@ -13,32 +13,40 @@ from aiogram.webhook.aiohttp_server import (
     setup_application,
 )
 
-from data.config import WEB_SERVER_HOST, WEB_SERVER_PORT, \
-                        MAIN_BOT_PATH, OTHER_BOTS_PATH, \
-                        BOT_TOKEN, BASE_URL, OTHER_BOTS_PATH, db
+from data.config import (
+    WEB_SERVER_HOST,
+    WEB_SERVER_PORT,
+    MAIN_BOT_PATH,
+    OTHER_BOTS_PATH,
+    BOT_TOKEN,
+    BASE_URL,
+    db,
+)
 
 from middlewares.session_to_update import Session
 from middlewares.album_collector import AlbumsMiddleware
 
 from utils import db_subscriptions_checker
 
+
 async def on_startup(bot: Bot):
     # await db.drop_db()
     # await db.create_db()
-    await bot.set_webhook(f"{BASE_URL}{MAIN_BOT_PATH}",
-                          allowed_updates=['message', 'callback_query', 'my_chat_member', 'chat_member'])
+    await bot.set_webhook(
+        f"{BASE_URL}{MAIN_BOT_PATH}",
+        allowed_updates=["message", "callback_query", "my_chat_member", "chat_member"],
+    )
 
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(db_subscriptions_checker, 'interval', days=1, args=[bot, db])
+    scheduler.add_job(db_subscriptions_checker, "interval", days=1, args=[bot, db])
     scheduler.start()
 
+
 session = AiohttpSession()
-bot = Bot(token=BOT_TOKEN,
-          session=session,
-    default=DefaultBotProperties(
-        parse_mode="HTML"
-        )
-    )
+bot = Bot(
+    token=BOT_TOKEN, session=session, default=DefaultBotProperties(parse_mode="HTML")
+)
+
 
 def main():
     logging.basicConfig(level=logging.INFO)
@@ -58,7 +66,9 @@ def main():
     other_bots_dispatcher.message.middleware(AlbumsMiddleware(2))
 
     app = web.Application()
-    SimpleRequestHandler(dispatcher=main_dispatcher, bot=bot).register(app, path=MAIN_BOT_PATH)
+    SimpleRequestHandler(dispatcher=main_dispatcher, bot=bot).register(
+        app, path=MAIN_BOT_PATH
+    )
 
     bot_settings = {"session": session, "parse_mode": ParseMode.HTML}
 
@@ -72,6 +82,6 @@ def main():
 
     web.run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
 
+
 if __name__ == "__main__":
     main()
-

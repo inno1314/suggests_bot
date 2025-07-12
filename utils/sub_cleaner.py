@@ -20,7 +20,7 @@ async def clean_subscription(session: AsyncSession, admin_id: int, db):
     for index, bot in enumerate(bots, 1):
         if index > 2:
             await db.bot_api.delete_bot(session, bot.id)
-            logger.info(f"Бот {bot.id} был удален из БД")
+            logger.info(f"Bot {bot.id} was deleted from DB")
             continue
 
         await db.bot_api.update_bot_field(session, bot.id, "is_premium", False)

@@ -1,12 +1,10 @@
-import json
 import logging
 from aiogram import types, F, Router, Bot
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from utils import image_uploader
-from models.message import MessageModel
-from data.config import db, BOT_TOKEN
+from data.config import db
 from data.messages import messages
 from keyboards.inline import back_markup
 from states import Mailing
@@ -26,11 +24,8 @@ async def ask_mailing(call: types.CallbackQuery, state: FSMContext):
 
 @router.message(Mailing.start)
 async def start_mailing(message: types.Message, bot: Bot, session: AsyncSession):
-    # model = message.model_dump_json()
-    # json_model = json.loads(model)
-    # await db.ads_api.add_mailing_message(session, json_model, message.html_text)
     text = message.html_text
-    link = image_uploader(message, BOT_TOKEN) if message.photo else None
+    link = image_uploader(message) if message.photo else None
 
     bots = await db.bot_api.get_bots_for_mailing(session)
     bots_log = [bot.id for bot in bots]
@@ -49,7 +44,6 @@ async def start_mailing(message: types.Message, bot: Bot, session: AsyncSession)
                     await tg_bot.send_message(
                         chat_id=user_id, text=text, parse_mode="HTML"
                     )
-                # await restored_message.copy_to(chat_id=user_id).as_(tg_bot)
             except Exception as e:
                 await db.bot_api.change_user_status(session, user_id, False)
                 logger.info(

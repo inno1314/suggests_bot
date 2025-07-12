@@ -17,7 +17,7 @@ async def view_ads(call: types.CallbackQuery, session: AsyncSession, state: FSMC
     if current_ad_message is not None:
         text = current_ad_message.html_text + messages["edit_ads"]
     else:
-        text = messages["default_answer"]+ messages["edit_ads"]
+        text = messages["default_answer"] + messages["edit_ads"]
     await state.set_state(Ads.editing)
 
     if current_ad_message is None or current_ad_message.photo_link is None:
@@ -56,8 +56,11 @@ async def edit_ads(message: types.Message, session: AsyncSession, state: FSMCont
     new_message = await message.answer(text, reply_markup=ads_markup)
     await state.update_data(message_id=new_message.message_id)
 
+
 @router.callback_query(Ads.editing, F.data == "clear_ads")
-async def clear_ads(call: types.CallbackQuery, session: AsyncSession, state: FSMContext):
+async def clear_ads(
+    call: types.CallbackQuery, session: AsyncSession, state: FSMContext
+):
     await db.ads_api.edit_ad_message(session, html_text=messages["default_answer"])
 
     data = await state.get_data()

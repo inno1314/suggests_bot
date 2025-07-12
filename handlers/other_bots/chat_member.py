@@ -77,10 +77,3 @@ async def bot_deleted_from_channel(
         session=session, channel_id=chat_id, bot_id=bot_id
     )
     logger.info(f"Removed channel {chat_id} from bot {bot_id}")
-
-
-# @router.message(F.migrate_to_chat_id)
-# async def group_to_supegroup_migration(message: types.Message, bot: Bot):
-#     # Группу обновили до супергруппы
-#     old_chat_id = message.chat.id
-#     new_chat_id = message.migrate_to_chat_id

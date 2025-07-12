@@ -8,7 +8,6 @@ from data.config import db
 from data.messages import messages
 from keyboards.inline import sub_types, payment_methods
 from states import TopUpBalance
-from utils import clean_subscription
 from payments import process_payment
 
 logger = logging.getLogger(__name__)
@@ -26,9 +25,7 @@ async def get_premium(call: types.CallbackQuery, session: AsyncSession):
         end_date = date_object.strftime("%d.%m.%Y %H:%M")
     text = '<blockquote><b>🪄 Подписка "PRO"</b></blockquote>\n\n'
     sub_status = (
-        "<i>не активна</i>"
-        if end_date is None
-        else f"<i>активна до {end_date}</i>"
+        "<i>не активна</i>" if end_date is None else f"<i>активна до {end_date}</i>"
     )
     text += f"<b>⏱Теущий статус:</b> {sub_status}\n\n"
     text += messages["about_subscription"]
@@ -45,7 +42,7 @@ async def set_plan(call: types.CallbackQuery, state: FSMContext):
     await call.answer()
 
 
-@router.callback_query(F.data.in_(["yoomoney", "aaio", "cryptobot", "nicepay"]))
+@router.callback_query(F.data.in_(["aaio", "cryptobot", "plat_card", "plat_sbp"]))
 async def set_pay_method(
     call: types.CallbackQuery, state: FSMContext, session: AsyncSession
 ):
@@ -58,30 +55,13 @@ async def set_pay_method(
 
     logger.info(f"Chosen options - Plan: {plan}, Method: {method}, Price: {price}")
 
-    if method == "nicepay" and price <= 250:
-        return await call.answer(
-            text="Сумма должна быть больше чем 250 RUB.", show_alert=True
-        )
-
     await process_payment(
-        session=session, call=call, plan=plan, payment_amount=price, system=method
+        session=session,
+        call=call,
+        state=state,
+        plan=plan,
+        payment_amount=price,
+        payment_operator=method,
     )
 
     await state.clear()
-
-
-@router.callback_query(F.data == "clear_sub")
-async def clear_sub(call: types.CallbackQuery, session: AsyncSession):
-    admin_id = call.from_user.id
-    sub = await db.subscription_api.get_subscription(session, admin_id)
-    if sub is None:
-        await call.answer(text="Subscription not active", show_alert=True)
-        return
-    logger.info(
-        f"Admin's {admin_id} sub start date: {sub.start_date}, end date: {sub.end_date}"
-    )
-    await clean_subscription(session, admin_id, db)
-    updated_sub = await db.subscription_api.get_subscription(session, admin_id)
-    if updated_sub is None:
-        logger.info("Subscription was successfully cleaned!")
-    await call.answer()

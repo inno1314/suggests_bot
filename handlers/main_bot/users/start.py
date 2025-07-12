@@ -5,7 +5,7 @@ from aiogram.filters import CommandStart, CommandObject
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from data.messages import messages
-from data.config import db, other_bots_commands as commands
+from data.config import db
 from keyboards.inline import start_msg_markup
 
 logger = logging.getLogger(__name__)
@@ -20,9 +20,6 @@ async def add_invited_admin(
     message: types.Message, session: AsyncSession, command: CommandObject
 ):
     user = message.from_user
-    bot = message.bot
-    # lang = str(user.language_code)
-    # lang = "ru"
     admin = await db.admin_api.get_admin(session=session, admin_id=user.id)
     if admin is None:
         admin = await db.admin_api.add_admin(

@@ -2,12 +2,11 @@ import logging
 from datetime import datetime, timezone
 from typing import Any
 from aiogram import Bot, html, types, Router, F
-from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.context import FSMContext
 from aiogram.exceptions import TelegramUnauthorizedError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from data.config import OTHER_BOTS_URL, db, other_bots_commands as commands
+from data.config import OTHER_BOTS_URL, db
 from main import bot as main_bot
 from data.messages import messages
 from utils import is_bot_token
@@ -30,7 +29,6 @@ async def add_msg_to_state(state: FSMContext, message: types.Message):
 async def create_bot(
     call: types.CallbackQuery, state: FSMContext, session: AsyncSession
 ):
-    # lang = str(call.from_user.language_code)
     bots = await db.admin_api.get_admins_bots(session, call.from_user.id)
 
     if len(bots) > 1 and not await isSub.__call__(isSub(), call, session):
@@ -51,12 +49,9 @@ async def create_bot(
 async def add_bot(
     message: types.Message, state: FSMContext, bot: Bot, session: AsyncSession
 ) -> Any:
-
     token = str(message.text)
     logger.info(f"Checking token {token} ...")
     new_bot = Bot(token=token, session=bot.session, parse_mode="HTML")
-    # default=DefaultBotProperties(parse_mode="HTML")
-    # )
 
     try:
         bot_user = await new_bot.get_me()
@@ -81,7 +76,7 @@ async def add_bot(
         OTHER_BOTS_URL.format(bot_token=token),
         allowed_updates=["message", "callback_query", "my_chat_member", "chat_member"],
     )
-    logger.info(f"Set webhook for new bot")
+    logger.info("Set webhook for new bot")
 
     user = message.from_user
 

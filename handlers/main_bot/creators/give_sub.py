@@ -2,10 +2,10 @@ import logging
 
 from aiogram import types, F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from data.config import db
+from keyboards.inline.subscribtions import admin_sub_types
 from utils import clean_subscription
 from states import GiveSub
 
@@ -14,27 +14,11 @@ logger = logging.getLogger(__name__)
 router = Router()
 
 
-sub_types = InlineKeyboardMarkup(
-    inline_keyboard=[
-        [
-            InlineKeyboardButton(text="30 дней (159₽)", callback_data="month"),
-            InlineKeyboardButton(text="90 дней (429₽)", callback_data="three_months"),
-        ],
-        [
-            InlineKeyboardButton(text="180 дней (799₽)", callback_data="half_year"),
-            InlineKeyboardButton(text="365 дней (1299₽)", callback_data="year"),
-        ],
-        [InlineKeyboardButton(text="Отменить подписку", callback_data="clear_sub")],
-        [InlineKeyboardButton(text="Назад", callback_data="to_admins_menu")],
-    ]
-)
-
-
 @router.callback_query(F.data == "give_sub_to_user")
 async def give_sub_to_user(call: types.CallbackQuery, state: FSMContext):
     await state.set_state(GiveSub.choosing_option)
     await call.answer()
-    await call.message.answer(text="<b>Выбери опцию:</b>", reply_markup=sub_types)
+    await call.message.answer(text="<b>Выбери опцию:</b>", reply_markup=admin_sub_types)
 
 
 @router.callback_query(

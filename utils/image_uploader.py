@@ -6,7 +6,6 @@ from data import config
 
 
 def image_uploader(message: Message) -> str | None:
-
     URI_INFO = f"https://api.telegram.org/bot{config.BOT_TOKEN}/getFile?file_id="
     URI = f"https://api.telegram.org/file/bot{config.BOT_TOKEN}/"
 

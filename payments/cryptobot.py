@@ -1,6 +1,6 @@
 import logging
 from aiocryptopay import AioCryptoPay, Networks
-from typing import Tuple
+from typing import Tuple, Optional
 
 from data.config import CRYPTO_BOT_TOKEN
 
@@ -19,9 +19,10 @@ class AsyncCryptoPayAPI:
             network: Network type (MAIN_NET or TEST_NET)
         """
         self.crypto = AioCryptoPay(token=token, network=network)
+        self.name = "CryptoBot"
 
     async def create_payment(
-        self, amount: float, currency: str = "RUB"
+        self, amount: float, currency: str = "RUB", **kwargs
     ) -> Tuple[str, str]:
         """
         Creates payment URL
@@ -37,11 +38,6 @@ class AsyncCryptoPayAPI:
         )
         return invoice.bot_invoice_url, str(invoice.invoice_id)
 
-    async def is_expired(self, invoice_id: str) -> bool:
-        """Check if the payment is expired"""
-        invoice_info = await self.crypto.get_invoices(invoice_ids=int(invoice_id))
-        return invoice_info.status == "expired"
-
     async def is_success(self, invoice_id: str) -> bool:
         """Check if the payment is successful"""
         invoice_info = await self.crypto.get_invoices(invoice_ids=int(invoice_id))
@@ -49,3 +45,19 @@ class AsyncCryptoPayAPI:
 
     async def close(self):
         await self.crypto.close()
+
+    async def get_balance(self) -> Optional[dict[str, str]]:
+        try:
+            balances = await self.crypto.get_balance()
+            output = {}
+
+            for balance in balances:
+                if balance.available > 0:
+                    output[balance.currency_code] = str(balance.available)
+
+            return output if output else None
+        except Exception as e:
+            logger.exception(f"Failed to get balance: {e}")
+            return None
+        finally:
+            await self.crypto.close()

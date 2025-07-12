@@ -2,12 +2,13 @@ import hashlib
 import logging
 from requests import post
 from requests.exceptions import RequestException
-from typing import Tuple
+from typing import Optional, Tuple
 from data.config import AAIO_API_KEY, AAIO_SECRET_KEY, AAIO_MERCHANT_ID
 from utils import generate_id
 
 import aiohttp
 
+AAIO_BALANCE_URL = "https://aaio.so"
 logger = logging.getLogger(__name__)
 
 
@@ -30,6 +31,7 @@ class AsyncAaioAPI:
         self.API_KEY = API_KEY
         self.SECRET_KEY = SECRET_KEY
         self.MERCHANT_ID = MERCHANT_ID
+        self.name = "AAIO"
 
     async def create_payment(
         self,
@@ -37,6 +39,7 @@ class AsyncAaioAPI:
         lang: str | None = "ru",
         currency: str | None = "RUB",
         description: str | None = None,
+        **kwargs,
     ) -> Tuple[str, str]:
         """
         Creates payment URL
@@ -56,7 +59,7 @@ class AsyncAaioAPI:
         merchant_id = self.MERCHANT_ID  # merchant id
         secret = self.SECRET_KEY  # secret key №1 from shop settings
 
-        sign = f":".join(
+        sign = ":".join(
             [str(merchant_id), str(amount), str(currency), str(secret), str(payment_id)]
         )
 
@@ -92,13 +95,13 @@ class AsyncAaioAPI:
         try:
             decoded = response.json()  # Парсинг результата
         except ValueError:
-            logger.info("Не удалось пропарсить ответ")
+            logger.info("Unable to decode JSON response")
             raise ValueError
 
         if decoded.get("type") == "success":
             return decoded["url"], payment_id
         else:
-            logger.info(f'Ошибка: {decoded.get("message", "Unknown error")}')
+            logger.info(f"Error: {decoded.get('message', 'Unknown error')}")
             raise ValueError
 
     async def get_payment_info(self, order_id):
@@ -125,15 +128,6 @@ class AsyncAaioAPI:
 
                 return response_json
 
-    async def is_expired(self, order_id):
-        """Check status payment (expired)"""
-
-        response_json = await self.get_payment_info(order_id)
-
-        return (
-            response_json["type"] == "success" and response_json["status"] == "expired"
-        )
-
     async def is_success(self, order_id):
         """Check status payment (success)"""
 
@@ -146,3 +140,23 @@ class AsyncAaioAPI:
 
     async def close(self) -> None:
         pass
+
+    async def get_balance(self) -> Optional[dict[str, str]]:
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-Api-Key": self.API_KEY,
+        }
+
+        try:
+            async with aiohttp.ClientSession(AAIO_BALANCE_URL) as session:
+                async with session.post("/api/balance", headers=headers) as r:
+                    response = await r.json(content_type=None)
+                    if response["type"] == "success":
+                        return {"RUB": str(response["balance"])}
+                    else:
+                        logger.info(f"Error fetching balance: {response}")
+                        return None
+        except Exception as e:
+            logger.info(f"Exception while fetching balance: {e}")
+            return None

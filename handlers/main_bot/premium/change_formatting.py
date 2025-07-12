@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 default_texts = {
     "start_msg_formatting": messages["senders_start"],
     "answer_msg_formatting": messages["default_answer"],
-    "post_formatting": "<i>Не установлена</i>"
+    "post_formatting": "<i>Не установлена</i>",
 }
 texts_for_admin = {
     "start_msg_formatting": messages["start_msg_formatting"],

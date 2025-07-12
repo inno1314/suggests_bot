@@ -22,9 +22,9 @@ ads_markup = InlineKeyboardMarkup(
         [
             InlineKeyboardButton(
                 text="❌ Вернуть значение по умолчанию",
-                callback_data=f"clear_ads",
+                callback_data="clear_ads",
             )
         ],
-        [InlineKeyboardButton(text="🔙", callback_data=f"to_admins_menu")],
+        [InlineKeyboardButton(text="🔙", callback_data="to_admins_menu")],
     ]
 )

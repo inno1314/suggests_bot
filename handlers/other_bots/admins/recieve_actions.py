@@ -137,7 +137,7 @@ async def send_to(call: types.CallbackQuery, session: AsyncSession, state: FSMCo
     formatting = (
         "\n\n" + db_bot.post_formatting if db_bot.post_formatting is not None else ""
     )
-    signature = f"\n\n{html.code('👤 '+sender_name)}" if db_bot.sign_messages else ""
+    signature = f"\n\n{html.code('👤 ' + sender_name)}" if db_bot.sign_messages else ""
 
     await bot.send_message(
         chat_id=sender_id,

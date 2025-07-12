@@ -1,5 +1,4 @@
-from .yoomoney import AsyncYoomoneyAPI
 from .aaio import AsyncAaioAPI
 from .cryptobot import AsyncCryptoPayAPI
-from .nicepay import AsyncNicePayAPI
+from .plat import AsyncPlatAPI
 from .process_payments import process_payment

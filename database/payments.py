@@ -17,9 +17,7 @@ class PaymentsDatabaseAPI(BaseDBApi):
         session: AsyncSession,
         user_id: int,
         amount: float,
-        service: Literal[
-            "aaio", "cryptobot", "cryptomus", "freekassa", "nicepay", "yoomoney"
-        ],
+        service: Literal["aaio", "cryptobot", "plat_card", "plat_sbp"],
         payment_id: str,
     ) -> None:
         """
@@ -41,19 +39,6 @@ class PaymentsDatabaseAPI(BaseDBApi):
         session.add(payment)
         await session.commit()
         logger.info(f"Payment {payment_id} was added to DB")
-
-    async def get_payment_info(
-        self, session_pool: async_sessionmaker, payment_id: str
-    ) -> Payments | None:
-        """
-        Возвращает информацию о платеже
-        :param payment id: Идентификатор платежа
-        """
-        async with session_pool() as session:
-            query = select(Payments).where(Payments.payment_id == payment_id)
-            result = await session.execute(query)
-            payment = result.scalar_one_or_none()
-            return payment
 
     async def change_payment_status(
         self,

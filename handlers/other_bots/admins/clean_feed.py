@@ -21,8 +21,6 @@ async def clean_feed(message: types.Message, session: AsyncSession):
             await bot.delete_message(chat_id=msg.chat_id, message_id=msg.id)
             logger.info(f"Deleting message {msg.id} ...")
         except Exception as e:
-            logger.info(
-                f"Exception when cleaning feed: {e}"
-            )
+            logger.info(f"Exception when cleaning feed: {e}")
 
     await message.delete()
