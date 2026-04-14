@@ -20,6 +20,7 @@ from data.config import (
     OTHER_BOTS_PATH,
     BOT_TOKEN,
     BASE_URL,
+    PROXY_URL,
     db,
 )
 
@@ -42,7 +43,7 @@ async def on_startup(bot: Bot):
     scheduler.start()
 
 
-session = AiohttpSession()
+session = AiohttpSession(proxy=PROXY_URL)
 bot = Bot(
     token=BOT_TOKEN, session=session, default=DefaultBotProperties(parse_mode="HTML")
 )

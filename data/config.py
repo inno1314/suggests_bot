@@ -14,6 +14,13 @@ BOT_TOKEN = str(getenv("BOT_TOKEN"))
 BASE_URL = str(getenv("BASE_URL"))
 OTHER_BOTS_URL = f"{BASE_URL}{OTHER_BOTS_PATH}"
 
+PROXY_USER = getenv("PROXY_USER")
+PROXY_PASS = getenv("PROXY_PASS")
+PROXY_HOST = getenv("PROXY_HOST")
+PROXY_PORT = getenv("PROXY_PORT")
+
+PROXY_URL = f"socks5://{PROXY_USER}:{PROXY_PASS}@{PROXY_HOST}:{PROXY_PORT}"
+
 DB_URL = "postgresql+asyncpg://inno:root@localhost/suggests_db"
 
 db = DataBaseApi(DB_URL)
