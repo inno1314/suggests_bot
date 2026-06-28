@@ -1,6 +1,6 @@
 import logging
 from datetime import date
-from sqlalchemy import update
+from sqlalchemy import update, func
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from typing import Literal, Sequence
@@ -64,3 +64,66 @@ class PaymentsDatabaseAPI(BaseDBApi):
     async def get_all_payments(self, session: AsyncSession) -> Sequence[Payments]:
         result = await session.execute(select(Payments))
         return result.scalars().all()
+
+    async def get_successful_payments_revenue(self, session: AsyncSession) -> float:
+        result = await session.execute(
+            select(func.sum(Payments.amount)).where(Payments.status == 'successful')
+        )
+        value = result.scalar()
+        return float(value) if value is not None else 0.0
+
+    async def get_successful_payments_by_service(self, session: AsyncSession) -> dict[str, float]:
+        result = await session.execute(
+            select(Payments.service, func.sum(Payments.amount))
+            .where(Payments.status == 'successful')
+            .group_by(Payments.service)
+        )
+        return {row[0]: float(row[1]) for row in result.all()}
+
+    async def get_payment_conversion_rate(self, session: AsyncSession) -> float:
+        total_result = await session.execute(select(func.count(Payments.payment_id)))
+        total = total_result.scalar() or 0
+        if total == 0:
+            return 0.0
+        successful_result = await session.execute(
+            select(func.count(Payments.payment_id)).where(Payments.status == 'successful')
+        )
+        successful = successful_result.scalar() or 0
+        return (successful / total) * 100
+
+    async def get_daily_revenue_trend(self, session: AsyncSession, days: int = 30) -> dict[date, tuple[float, float]]:
+        from datetime import datetime, timedelta
+        today = date.today()
+        dates = [today - timedelta(days=i) for i in range(days)]
+        dates.reverse()
+        trend = {d: (0.0, 0.0) for d in dates}
+        
+        result = await session.execute(
+            select(Payments.amount, Payments.date, Payments.status)
+        )
+        for amount, date_str, status in result.all():
+            try:
+                p_date = datetime.strptime(date_str, "%d.%m.%Y").date()
+                if p_date in trend:
+                    succ, unsucc = trend[p_date]
+                    if status == 'successful':
+                        trend[p_date] = (succ + float(amount), unsucc)
+                    else:
+                        trend[p_date] = (succ, unsucc + float(amount))
+            except Exception as e:
+                logger.warning(f"Failed to parse payment date string '{date_str}': {e}")
+        return trend
+
+    async def get_latest_payments(self, session: AsyncSession, limit: int = 10) -> list[Payments]:
+        from datetime import datetime
+        result = await session.execute(select(Payments))
+        payments = list(result.scalars().all())
+        
+        def get_parsed_date(p):
+            try:
+                return datetime.strptime(p.date, "%d.%m.%Y")
+            except:
+                return datetime.min
+                
+        payments.sort(key=get_parsed_date, reverse=True)
+        return payments[:limit]

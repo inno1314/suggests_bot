@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func, cast, BigInteger
 from typing import Any
 
 from .base_class import BaseDBApi
@@ -138,4 +138,91 @@ class MessageDatabaseApi(BaseDBApi):
         await session.flush()
         await session.commit()
         return feed
+
+    async def get_active_bots_count(self, session: AsyncSession, days: int = 30) -> int:
+        import time
+        min_timestamp = time.time() - (days * 86400)
+        stmt = (
+            select(func.count(func.distinct(SuggestedMessage.bot_id)))
+            .where(
+                cast(SuggestedMessage.message_data.op("->>")("date"), BigInteger) >= min_timestamp
+            )
+        )
+        result = await session.execute(stmt)
+        return result.scalar() or 0
+
+    async def get_platform_suggestions_count(self, session: AsyncSession, days: int = 30) -> int:
+        import time
+        min_timestamp = time.time() - (days * 86400)
+        stmt = (
+            select(func.count(SuggestedMessage.primary_key))
+            .where(
+                cast(SuggestedMessage.message_data.op("->>")("date"), BigInteger) >= min_timestamp
+            )
+        )
+        result = await session.execute(stmt)
+        return result.scalar() or 0
+
+    async def get_total_suggestions_count(self, session: AsyncSession) -> int:
+        stmt = select(func.count(SuggestedMessage.primary_key))
+        result = await session.execute(stmt)
+        return result.scalar() or 0
+
+    async def get_bot_suggestions_count(self, session: AsyncSession, bot_id: int) -> int:
+        stmt = select(func.count(SuggestedMessage.primary_key)).where(SuggestedMessage.bot_id == bot_id)
+        result = await session.execute(stmt)
+        return result.scalar() or 0
+
+    async def get_bot_unique_senders_count(self, session: AsyncSession, bot_id: int) -> int:
+        stmt = select(func.count(func.distinct(SuggestedMessage.sender_id))).where(SuggestedMessage.bot_id == bot_id)
+        result = await session.execute(stmt)
+        return result.scalar() or 0
+
+    async def get_bot_suggestions_trend(self, session: AsyncSession, bot_id: int, days: int = 30) -> dict:
+        import time
+        from datetime import date, datetime, timedelta
+        today = date.today()
+        dates = [today - timedelta(days=i) for i in range(days)]
+        dates.reverse()
+        trend = {d: 0 for d in dates}
+        
+        min_timestamp = time.time() - (days * 86400)
+        stmt = (
+            select(cast(SuggestedMessage.message_data.op("->>")("date"), BigInteger))
+            .where(SuggestedMessage.bot_id == bot_id)
+            .where(cast(SuggestedMessage.message_data.op("->>")("date"), BigInteger) >= min_timestamp)
+        )
+        result = await session.execute(stmt)
+        for timestamp in result.scalars().all():
+            try:
+                msg_date = datetime.fromtimestamp(timestamp).date()
+                if msg_date in trend:
+                    trend[msg_date] += 1
+            except Exception as e:
+                pass
+        return trend
+
+    async def get_platform_suggestions_trend(self, session: AsyncSession, days: int = 30) -> dict:
+        import time
+        from datetime import date, datetime, timedelta
+        today = date.today()
+        dates = [today - timedelta(days=i) for i in range(days)]
+        dates.reverse()
+        trend = {d: 0 for d in dates}
+        
+        min_timestamp = time.time() - (days * 86400)
+        stmt = (
+            select(cast(SuggestedMessage.message_data.op("->>")("date"), BigInteger))
+            .where(cast(SuggestedMessage.message_data.op("->>")("date"), BigInteger) >= min_timestamp)
+        )
+        result = await session.execute(stmt)
+        for timestamp in result.scalars().all():
+            try:
+                msg_date = datetime.fromtimestamp(timestamp).date()
+                if msg_date in trend:
+                    trend[msg_date] += 1
+            except Exception as e:
+                pass
+        return trend
+
 

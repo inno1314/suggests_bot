@@ -1,4 +1,5 @@
 import logging
+import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from aiogram import Bot, Dispatcher
@@ -27,7 +28,7 @@ from data.config import (
 from middlewares.session_to_update import Session
 from middlewares.album_collector import AlbumsMiddleware
 
-from utils import db_subscriptions_checker
+from utils import db_subscriptions_checker, pre_render_platform_charts
 
 
 async def on_startup(bot: Bot):
@@ -40,7 +41,11 @@ async def on_startup(bot: Bot):
 
     scheduler = AsyncIOScheduler()
     scheduler.add_job(db_subscriptions_checker, "interval", days=1, args=[bot, db])
+    scheduler.add_job(pre_render_platform_charts, "interval", hours=1, args=[bot, db])
     scheduler.start()
+    
+    # Run pre-rendering once at startup in background (non-blocking)
+    asyncio.create_task(pre_render_platform_charts(bot, db))
 
 
 session = AiohttpSession(proxy=PROXY_URL)

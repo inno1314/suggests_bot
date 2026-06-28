@@ -21,5 +21,6 @@ async def setts_buttons(session: AsyncSession, bot_id: int) -> InlineKeyboardMar
         )
     )
     builder.row(InlineKeyboardButton(text="💼 Оформление", callback_data="formats"))
+    builder.row(InlineKeyboardButton(text="📊 Статистика", callback_data="bot_stats"))
     builder.row(InlineKeyboardButton(text="🔙", callback_data="to_botlist"))
     return builder.as_markup()
