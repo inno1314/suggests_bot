@@ -1,14 +1,14 @@
 import matplotlib.pyplot as plt
 from matplotlib.dates import DateFormatter
-from datetime import datetime, timedelta
-from sqlalchemy import select
+from datetime import datetime, timedelta, date
+from sqlalchemy import select, func, cast, BigInteger, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 import numpy as np
 import asyncio
 import time
 import logging
 
-from database.model import AdMessageViews
+from database.model import AdMessageViews, SuggestedMessage, Bot
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,7 @@ def apply_common_styles(ax, title, xlabel, ylabel):
 
 # Synchronous helper functions for plotting in thread executor
 def _render_view_count_chart(dates, counts):
-    _, ax = plt.subplots(figsize=(10, 5), facecolor="#ffffff")
+    fig, ax = plt.subplots(figsize=(10, 5), facecolor="#ffffff")
 
     # Modern smooth line with customized marker
     ax.plot(
@@ -97,7 +97,7 @@ def _render_revenue_chart(dates, succ_amounts, unsucc_amounts):
     x = np.arange(len(dates))
     width = 0.35
 
-    _, ax = plt.subplots(figsize=(10, 5), facecolor="#ffffff")
+    fig, ax = plt.subplots(figsize=(10, 5), facecolor="#ffffff")
 
     # Grouped bars for successful and unsuccessful payments
     ax.bar(
@@ -133,7 +133,7 @@ def _render_revenue_chart(dates, succ_amounts, unsucc_amounts):
 
 
 def _render_activity_chart(dates, counts):
-    _, ax = plt.subplots(figsize=(10, 5), facecolor="#ffffff")
+    fig, ax = plt.subplots(figsize=(10, 5), facecolor="#ffffff")
 
     # Modern smooth line and area fill
     ax.plot(
@@ -169,7 +169,7 @@ def _render_activity_chart(dates, counts):
 
 
 def _render_bot_suggestions_chart(bot_id, dates, counts):
-    _, ax = plt.subplots(figsize=(10, 5), facecolor="#ffffff")
+    fig, ax = plt.subplots(figsize=(10, 5), facecolor="#ffffff")
 
     ax.plot(
         dates,
@@ -294,8 +294,49 @@ async def pre_render_platform_charts(bot, db):
         try:
             path, count_30_days = await generate_activity_chart(session)
             chart_cache.set("pre_rendered_val:activity", count_30_days, ttl=None)
+
+            # Active bots count
+            active_bots = await db.message_api.get_active_bots_count(session, days=30)
+            chart_cache.set("pre_rendered_val:active_bots_count", active_bots, ttl=None)
+
+            # Top-5 active bots in last 30 days
+            min_timestamp = time.time() - (30 * 86400)
+            stmt = (
+                select(
+                    Bot.name,
+                    Bot.url,
+                    func.count(SuggestedMessage.primary_key).label("msg_count"),
+                )
+                .join(SuggestedMessage, Bot.id == SuggestedMessage.bot_id)
+                .where(
+                    cast(SuggestedMessage.message_data.op("->>")("date"), BigInteger)
+                    >= min_timestamp
+                )
+                .group_by(Bot.id, Bot.name, Bot.url)
+                .order_by(desc("msg_count"))
+                .limit(5)
+            )
+            res = await session.execute(stmt)
+            top_bots_data = res.all()
+            top_bots_lines = []
+            for index, (bot_name, bot_url, count_val) in enumerate(top_bots_data, 1):
+                username = (
+                    f"@{bot_url.split('/')[-1]}"
+                    if (bot_url and "/" in bot_url)
+                    else bot_name
+                )
+                top_bots_lines.append(
+                    f"  {index}. <b>{username}</b>: <code>{count_val}</code> сообщений"
+                )
+            top_bots_text = (
+                "\n".join(top_bots_lines) if top_bots_lines else "  Нет активности"
+            )
+            chart_cache.set("pre_rendered_val:top_bots_text", top_bots_text, ttl=None)
+
             chart_cache.delete("platform_stats:activity")
-            logger.info(f"Pre-rendered activity chart. Count: {count_30_days}")
+            logger.info(
+                f"Pre-rendered activity chart & statistics. Count: {count_30_days}, Bots: {active_bots}"
+            )
         except Exception as e:
             logger.error(f"Failed to pre-render activity chart: {e}")
 
