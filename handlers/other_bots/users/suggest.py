@@ -149,11 +149,16 @@ async def resend_to_admin(
         except TelegramBadRequest as e:
             if "the message can't be copied" in e.message:
                 logger.info(
-                    f"Failed to copy message {message.message_id} from user {sender_id}: {e.message}"
+                    f"Message {message.message_id} from user {sender_id} is protected/uncopyable content and was skipped."
                 )
-                await message.answer(
-                    "<b>🚫 Извините, это сообщение защищено настройками Telegram (платное медиа, розыгрыш и др.) и не может быть переслано администрации.</b>"
-                )
+                try:
+                    await message.answer(
+                        "<b>🚫 Извините, это сообщение защищено настройками Telegram (платное медиа, розыгрыш и др.) и не может быть переслано администрации.</b>"
+                    )
+                except Exception as send_err:
+                    logger.info(
+                        f"Failed to send copy-restriction warning to user {sender_id}: {send_err}"
+                    )
                 return
             elif "chat not found" in e.message:
                 logger.info(f"Unable to send to admin {admin_id} due to: {e.message}")
