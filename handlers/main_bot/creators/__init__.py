@@ -10,9 +10,6 @@ from .give_sub import router as give_sub_router
 router = Router()
 router.message.filter(isBotCreator())
 
-router.include_routers(menu_router,
-                       income_router,
-                       ad_router,
-                       give_sub_router,
-                       mailing_router)
-
+router.include_routers(
+    menu_router, income_router, ad_router, give_sub_router, mailing_router
+)

@@ -18,16 +18,17 @@ from data.config import db
 
 router = Router(name=__name__)
 
-router.include_routers(start_router,
-                       view_bots_router,
-                       add_bot_router,
-                       delete_bot_router,
-                       switch_state_router,
-                       back_router,
-                       setts_router,
-                       get_sub,
-                       ok_router)
-
+router.include_routers(
+    start_router,
+    view_bots_router,
+    add_bot_router,
+    delete_bot_router,
+    switch_state_router,
+    back_router,
+    setts_router,
+    get_sub,
+    ok_router,
+)
 
 
 @router.my_chat_member(ChatMemberUpdatedFilter(member_status_changed=KICKED))

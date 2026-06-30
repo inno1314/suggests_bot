@@ -6,7 +6,4 @@ from .creators import router as admins_router
 
 main_router = Router()
 
-main_router.include_routers(admins_router,
-                            users_router,
-                            premium_router)
-
+main_router.include_routers(admins_router, users_router, premium_router)
