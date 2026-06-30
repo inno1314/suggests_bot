@@ -1,6 +1,6 @@
 import json, logging
 from aiogram import Bot, html, types, Router, F
-from aiogram.exceptions import TelegramBadRequest
+from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
 from aiogram.client.default import DefaultBotProperties
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Any
@@ -146,6 +146,10 @@ async def resend_to_admin(
                 await send_with_kwargs(
                     bot, session, sender_id, kwargs, message, json_model
                 )
+        except TelegramForbiddenError as e:
+            logger.info(f"Unable to send to admin {admin_id} due to: {e.message}")
+            await db.bot_api.change_user_status(session, admin_id, False)
+            continue
         except TelegramBadRequest as e:
             if "the message can't be copied" in e.message:
                 logger.info(

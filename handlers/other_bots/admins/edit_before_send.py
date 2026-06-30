@@ -1,8 +1,12 @@
 import json
+import logging
 from aiogram import types, Router, F, html, Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
+from aiogram.exceptions import TelegramForbiddenError
+
+logger = logging.getLogger(__name__)
 
 from data.config import db
 from .recieve_actions import hide_channels
@@ -146,11 +150,17 @@ async def send_to(call: types.CallbackQuery, state: FSMContext, session: AsyncSe
     await bot.delete_message(user_id, int(data["msg_to_delete"]))
 
     sender_id = group[0].sender_id
-    await bot.send_message(
-        chat_id=sender_id,
-        text=f"⭐️ Администрация опубликовала Ваше сообщение в  \
-        канале <b>'{channel.name}'</b>!",
-    )
+    try:
+        await bot.send_message(
+            chat_id=sender_id,
+            text=f"⭐️ Администрация опубликовала Ваше сообщение в  \
+            канале <b>'{channel.name}'</b>!",
+        )
+    except TelegramForbiddenError:
+        logger.info(f"Sender {sender_id} has blocked the bot. Skipping notification.")
+        await db.bot_api.change_user_status(session, sender_id, False)
+    except Exception as e:
+        logger.warning(f"Unable to send publication notification to sender {sender_id}: {e}")
     await state.clear()
     await call.answer()
 

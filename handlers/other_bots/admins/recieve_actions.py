@@ -2,6 +2,7 @@ import logging
 from aiogram import Bot, types, Router, F, html
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
+from aiogram.exceptions import TelegramForbiddenError
 
 from models.message import MessageModel
 from data.config import db
@@ -139,11 +140,17 @@ async def send_to(call: types.CallbackQuery, session: AsyncSession, state: FSMCo
     )
     signature = f"\n\n{html.code('👤 ' + sender_name)}" if db_bot.sign_messages else ""
 
-    await bot.send_message(
-        chat_id=sender_id,
-        text=f"⭐️ Администрация опубликовала Ваше сообщение в  \
-        канале <b>'{channel.name}'</b>!",
-    )
+    try:
+        await bot.send_message(
+            chat_id=sender_id,
+            text=f"⭐️ Администрация опубликовала Ваше сообщение в  \
+            канале <b>'{channel.name}'</b>!",
+        )
+    except TelegramForbiddenError:
+        logger.info(f"Sender {sender_id} has blocked the bot. Skipping notification.")
+        await db.bot_api.change_user_status(session, sender_id, False)
+    except Exception as e:
+        logger.warning(f"Unable to send publication notification to sender {sender_id}: {e}")
     await state.clear()
 
     if group[0].media_group_id != "":

@@ -1,5 +1,6 @@
 import logging
 from aiogram import types, Bot, html, Router, F
+from aiogram.exceptions import TelegramForbiddenError
 from aiogram.filters.chat_member_updated import (
     ChatMemberUpdatedFilter,
     JOIN_TRANSITION,
@@ -35,12 +36,17 @@ async def bot_added_to_channel(
 
     admins = await db.bot_api.get_bots_admins(session, bot_id)
     for admin in admins:
-        await bot.send_message(
-            chat_id=admin,
-            text=f'ℹ️ Канал "{html.bold(chat_name)}" теперь доступен для публикаций постов из этого бота!',
-            reply_markup=ok_button,
-        )
-
+        try:
+            await bot.send_message(
+                chat_id=admin,
+                text=f'ℹ️ Канал "{html.bold(chat_name)}" теперь доступен для публикаций постов из этого бота!',
+                reply_markup=ok_button,
+            )
+        except TelegramForbiddenError:
+            logger.info(f"Admin {admin} has blocked the bot. Marking as inactive.")
+            await db.bot_api.change_user_status(session, admin, False)
+        except Exception as e:
+            logger.warning(f"Failed to notify admin {admin} about channel join: {e}")
     await db.channel_api.add_channel(
         session, channel_id=chat_id, name=chat_name, bot_id=bot_id
     )
@@ -65,14 +71,18 @@ async def bot_deleted_from_channel(
     name = event.chat.full_name
     bot_id = bot.id
 
-    admins = await db.bot_api.get_bots_admins(session, bot_id)
     for admin in admins:
-        await bot.send_message(
-            chat_id=admin,
-            text=f'⚠️ Канал "{html.bold(name)}" более недоступен для публикации постов из этого бота!',
-            reply_markup=ok_button,
-        )
-
+        try:
+            await bot.send_message(
+                chat_id=admin,
+                text=f'⚠️ Канал "{html.bold(name)}" более недоступен для публикации постов из этого бота!',
+                reply_markup=ok_button,
+            )
+        except TelegramForbiddenError:
+            logger.info(f"Admin {admin} has blocked the bot. Marking as inactive.")
+            await db.bot_api.change_user_status(session, admin, False)
+        except Exception as e:
+            logger.warning(f"Failed to notify admin {admin} about channel leave: {e}")
     await db.channel_api.remove_channel(
         session=session, channel_id=chat_id, bot_id=bot_id
     )
