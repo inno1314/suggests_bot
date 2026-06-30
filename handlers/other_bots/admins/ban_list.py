@@ -26,7 +26,7 @@ async def show_banned(message: types.Message, session: AsyncSession, page: int) 
     )
 
 
-@router.message(or_f(Command("banlist"), F.text == "🚷 Banlist"))
+@router.message(or_f(Command("banlist"), F.text == "🚷 Banlist"), F.chat.type == "private")
 async def show_banlist(message: types.Message, session: AsyncSession) -> None:
     bot_id = message.bot.id
     banlist = await db.bot_api.get_banlist(session, bot_id=bot_id)

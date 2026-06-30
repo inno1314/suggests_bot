@@ -1,4 +1,4 @@
-from aiogram import types, Router
+from aiogram import types, Router, F
 from aiogram.filters import Command
 
 from data.config import other_bots_commands as commands
@@ -7,7 +7,7 @@ from keyboards.default import main_menu
 router = Router()
 
 
-@router.message(Command("start"))
+@router.message(Command("start"), F.chat.type == "private")
 async def start(message: types.Message):
     await message.delete()
 

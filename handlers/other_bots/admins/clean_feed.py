@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 router = Router()
 
 
-@router.message(or_f(Command("rm"), F.text == "🧹 Очистить предложку"))
+@router.message(or_f(Command("rm"), F.text == "🧹 Очистить предложку"), F.chat.type == "private")
 async def clean_feed(message: types.Message, session: AsyncSession):
     bot = message.bot
     feed = await db.message_api.clean_feed(session, bot.id)

@@ -1,5 +1,5 @@
 import logging
-from aiogram import types, Router
+from aiogram import types, Router, F
 from aiogram.filters import Command
 from data.config import db
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,7 +9,7 @@ from data.messages import messages
 logger = logging.getLogger(__name__)
 router = Router()
 
-@router.message(Command("start"))
+@router.message(Command("start"), F.chat.type == "private")
 async def start(message: types.Message, session: AsyncSession):
     user_id = message.from_user.id
     bot_id = message.bot.id

@@ -6,7 +6,7 @@ from data.messages import messages
 router = Router()
 
 
-@router.message(or_f(Command("help"), F.text == "ℹ️ Помощь"))
+@router.message(or_f(Command("help"), F.text == "ℹ️ Помощь"), F.chat.type == "private")
 async def start(message: types.Message):
     await message.delete()
     await message.answer(

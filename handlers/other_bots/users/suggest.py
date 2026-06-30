@@ -1,5 +1,5 @@
 import json, logging
-from aiogram import Bot, html, types, Router
+from aiogram import Bot, html, types, Router, F
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.client.default import DefaultBotProperties
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -48,7 +48,7 @@ async def send_with_kwargs(
     )
 
 
-@router.message()
+@router.message(F.chat.type == "private")
 async def resend_to_admin(
     message: types.Message,
     session: AsyncSession,
