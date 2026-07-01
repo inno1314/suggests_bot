@@ -7,7 +7,7 @@ This document provides a comprehensive overview of the **Suggests Bot** codebase
 ## 1. Project Overview
 
 The **Suggests Bot** is a Telegram-based post-suggestion system. It consists of:
-1. **A Master (Main) Bot**: Users interact with this bot to purchase subscriptions/premium plans, generate and manage their own suggestions bots, link Telegram channels, and view stats.
+1. **A Master (Main) Bot**: Users interact with this bot to purchase subscriptions/premium plans, generate and manage their own suggestions bots.
 2. **Dynamic Suggestions Bots**: Independent, dynamically-added bots managed under a single webhook endpoint. Suggesters use them to submit posts/media, and channel administrators use them to approve, edit, or publish suggestions to their linked Telegram channels.
 
 ---
