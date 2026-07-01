@@ -14,6 +14,14 @@ class ChannelDatabaseApi(BaseDBApi):
         :param name: Название канала
         :param bot_id: Telegram ID бота
         """
+        query = select(Channels).where(Channels.id == channel_id, Channels.bot_id == bot_id)
+        existing = await session.scalar(query)
+        if existing is not None:
+            if existing.name != name:
+                existing.name = name
+                await session.commit()
+            return
+
         channel = Channels(
             id=channel_id,
             name=name,
