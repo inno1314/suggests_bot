@@ -34,8 +34,7 @@ async def get_premium(call: types.CallbackQuery, session: AsyncSession):
 
 @router.callback_query(F.data.in_(["month", "three_months", "half_year", "year"]))
 async def set_plan(call: types.CallbackQuery, state: FSMContext):
-    await state.set_state(TopUpBalance.balance)
-    await state.update_data(plan=str(call.data))
+    await state.clear()
     await call.message.edit_text(
         text=messages["payment_method"], reply_markup=payment_methods
     )
