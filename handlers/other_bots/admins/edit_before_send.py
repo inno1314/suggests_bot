@@ -95,6 +95,9 @@ async def send_to(call: types.CallbackQuery, state: FSMContext, session: AsyncSe
     group = await db.message_api.get_messages_by_group_id(
         session, bot.id, str(data.get("group_id"))
     )
+    if group:
+        group = sorted(group, key=lambda msg: msg.id)
+
     channel = await db.channel_api.get_channel(session, chat_id, bot.id)
 
     db_bot = await db.bot_api.get_bot(session, bot.id)
@@ -102,50 +105,112 @@ async def send_to(call: types.CallbackQuery, state: FSMContext, session: AsyncSe
         "\n\n" + db_bot.post_formatting if db_bot.post_formatting is not None else ""
     )
 
+    sender_name = ""
+    restored_original = None
+    if group:
+        original_message_model = MessageModel.model_validate(group[0].message_data)
+        restored_original = original_message_model.to_aiogram()
+        sender_name = restored_original.from_user.first_name
+
+    signature = f"\n\n{html.code('👤 ' + sender_name)}" if db_bot.sign_messages else ""
+    sign_formatting = signature + formatting
+
     media_group_ids = data.get("media_group_ids")
     message_id = data.get("message_id")
     message_model = data.get("message_model")
 
-    if data.get("album_size") is not None:
-        media = list()
-        for index in range(int(data["album_size"])):
-            model_from_data = data[f"{index}message_model"]
-            message_data = json.loads(model_from_data)
-            model = MessageModel.model_validate(message_data)
-            restored_media = model.to_aiogram()
-            media.append(restored_media)
-
-        caption = (
-            str(data.get("html_text")) if data.get("html_text") is not None else ""
-        )
-
-        new_album = restore_album(messages=media, sign=formatting, html_text=caption)
-        await bot.send_media_group(chat_id, media=new_album)
-
-        if media_group_ids is not None:
-            await bot.delete_messages(user_id, media_group_ids)
-
-    if message_id is not None and message_model is not None:
+    # Check if the edited message is a plain text message
+    edited_is_text = False
+    if data.get("album_size") is None and message_model is not None:
         message_data = json.loads(message_model)
         model = MessageModel.model_validate(message_data)
         restored_message = model.to_aiogram()
         if restored_message.text is not None:
-            text = (
+            edited_is_text = True
+
+    if edited_is_text:
+        # The admin sent a plain text message as their edit (presumably editing the caption/text)
+        if group and restored_original is not None:
+            # Case 1: The original suggestion was an album (media group)
+            if group[0].media_group_id != "":
+                media_group = await db.message_api.get_messages_by_media_group_id(
+                    session, bot.id, call.from_user.id, group[0].media_group_id
+                )
+                media_group = sorted(media_group, key=lambda msg: msg.id)
+
+                media = list()
+                for msg in media_group:
+                    m_model = MessageModel.model_validate(msg.message_data)
+                    restored_media = m_model.to_aiogram()
+                    media.append(restored_media)
+
+                caption = (
+                    str(data.get("html_text")) if data.get("html_text") is not None else ""
+                )
+
+                new_album = restore_album(messages=media, sign=sign_formatting, html_text=caption)
+                await bot.send_media_group(chat_id, media=new_album)
+
+            # Case 2: The original suggestion was a single media message
+            elif restored_original.text is None:
+                caption = (
+                    str(data.get("html_text")) + sign_formatting
+                    if data.get("html_text") is not None
+                    else sign_formatting
+                )
+                await restored_original.copy_to(chat_id, caption=caption).as_(bot)
+
+            # Case 3: The original suggestion was a single text message
+            else:
+                text = (
+                    str(data.get("html_text")) if data.get("html_text") is not None else ""
+                )
+                await bot.send_message(
+                    chat_id, text + sign_formatting, disable_web_page_preview=True
+                )
+
+            await bot.delete_message(user_id, int(message_id))
+    else:
+        # The admin sent a new media message or album (fully replacing the original media)
+        if data.get("album_size") is not None:
+            media = list()
+            for index in range(int(data["album_size"])):
+                model_from_data = data[f"{index}message_model"]
+                message_data = json.loads(model_from_data)
+                model = MessageModel.model_validate(message_data)
+                restored_media = model.to_aiogram()
+                media.append(restored_media)
+
+            caption = (
                 str(data.get("html_text")) if data.get("html_text") is not None else ""
             )
-            await bot.send_message(
-                chat_id, text + formatting, disable_web_page_preview=True
-            )
-        else:
-            caption = (
-                restored_message.html_text + formatting
-                if restored_message.caption is not None
-                else formatting
-            )
-            await restored_message.copy_to(chat_id, caption=caption).as_(bot)
 
-        await bot.delete_message(user_id, int(message_id))
+            new_album = restore_album(messages=media, sign=sign_formatting, html_text=caption)
+            await bot.send_media_group(chat_id, media=new_album)
 
+            if media_group_ids is not None:
+                await bot.delete_messages(user_id, media_group_ids)
+
+        elif message_id is not None and message_model is not None:
+            message_data = json.loads(message_model)
+            model = MessageModel.model_validate(message_data)
+            restored_message = model.to_aiogram()
+            if restored_message.text is not None:
+                text = (
+                    str(data.get("html_text")) if data.get("html_text") is not None else ""
+                )
+                await bot.send_message(
+                    chat_id, text + sign_formatting, disable_web_page_preview=True
+                )
+            else:
+                caption = (
+                    restored_message.html_text + sign_formatting
+                    if restored_message.caption is not None
+                    else sign_formatting
+                )
+                await restored_message.copy_to(chat_id, caption=caption).as_(bot)
+
+            await bot.delete_message(user_id, int(message_id))
     await call.message.delete()
     await bot.delete_message(user_id, int(data["msg_to_delete"]))
 
