@@ -45,9 +45,10 @@ class ChannelDatabaseApi(BaseDBApi):
         """
         query = select(Channels).where(Channels.id == channel_id, Channels.bot_id == bot_id)
         result: Channels = await session.scalar(query)
-        await session.delete(result)
-        await session.flush()
-        await session.commit()
+        if result is not None:
+            await session.delete(result)
+            await session.flush()
+            await session.commit()
 
     async def get_channels_info(self, session: AsyncSession,
                                bot_id: int) -> list[dict]:

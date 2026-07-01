@@ -71,6 +71,7 @@ async def bot_deleted_from_channel(
     name = event.chat.full_name
     bot_id = bot.id
 
+    admins = await db.bot_api.get_bots_admins(session, bot_id)
     for admin in admins:
         try:
             await bot.send_message(
