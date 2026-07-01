@@ -164,6 +164,11 @@ async def resend_to_admin(
                         f"Failed to send copy-restriction warning to user {sender_id}: {send_err}"
                     )
                 return
+            elif "message to copy not found" in e.message:
+                logger.info(
+                    f"Message {message.message_id} from user {sender_id} was deleted by the user before it could be forwarded to admins."
+                )
+                return
             elif "chat not found" in e.message:
                 logger.info(f"Unable to send to admin {admin_id} due to: {e.message}")
                 await db.bot_api.change_user_status(session, admin_id, False)

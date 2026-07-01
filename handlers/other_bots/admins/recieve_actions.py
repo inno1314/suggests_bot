@@ -2,7 +2,7 @@ import logging
 from aiogram import Bot, types, Router, F, html
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
-from aiogram.exceptions import TelegramForbiddenError
+from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
 
 from models.message import MessageModel
 from data.config import db
@@ -180,8 +180,28 @@ async def send_to(call: types.CallbackQuery, session: AsyncSession, state: FSMCo
         if restored_message.caption is not None
         else signature
     )
-    await restored_message.copy_to(chat_id, caption=caption).as_(bot)
 
+    try:
+        await restored_message.copy_to(chat_id, caption=caption).as_(bot)
+    except TelegramBadRequest as e:
+        if "message to copy not found" in e.message:
+            logger.warning(
+                f"Failed to publish message from user {sender_id} to channel {chat_id}: message to copy not found (likely deleted)."
+            )
+            await call.answer(
+                "🚫 Сообщение не найдено! Возможно, отправитель удалил его из переписки с ботом.",
+                show_alert=True
+            )
+        elif "the message can't be copied" in e.message:
+            logger.warning(
+                f"Failed to publish message from user {sender_id} to channel {chat_id}: the message can't be copied (protected content)."
+            )
+            await call.answer(
+                "🚫 Это сообщение защищено настройками Telegram и не может быть скопировано.",
+                show_alert=True
+            )
+        else:
+            raise e
 
 @router.callback_query(F.data[:12] == "channel_page")
 async def process_channel_page_callback(
