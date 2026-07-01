@@ -8,3 +8,5 @@ logs.txt
 *.sql
 *.DS_Store
 .omp/
+agent.md
+AGENT.md
