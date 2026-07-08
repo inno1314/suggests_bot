@@ -43,7 +43,7 @@ async def on_startup(bot: Bot):
     scheduler.add_job(db_subscriptions_checker, "interval", days=1, args=[bot, db])
     scheduler.add_job(pre_render_platform_charts, "interval", hours=1, args=[bot, db])
     scheduler.start()
-    
+
     # Run pre-rendering once at startup in background (non-blocking)
     asyncio.create_task(pre_render_platform_charts(bot, db))
 
