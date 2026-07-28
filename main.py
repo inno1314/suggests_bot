@@ -1,4 +1,5 @@
 import logging
+import socket
 import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -49,6 +50,7 @@ async def on_startup(bot: Bot):
 
 
 session = AiohttpSession(proxy=PROXY_URL)
+session._connector_init["family"] = socket.AF_INET
 bot = Bot(
     token=BOT_TOKEN, session=session, default=DefaultBotProperties(parse_mode="HTML")
 )
