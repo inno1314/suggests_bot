@@ -20,7 +20,10 @@ PROXY_HOST = getenv("PROXY_HOST")
 PROXY_PORT = getenv("PROXY_PORT")
 
 if PROXY_HOST:
-    PROXY_URL = f"socks5://{PROXY_USER}:{PROXY_PASS}@{PROXY_HOST}:{PROXY_PORT}"
+    if PROXY_USER and PROXY_PASS:
+        PROXY_URL = f"socks5://{PROXY_USER}:{PROXY_PASS}@{PROXY_HOST}:{PROXY_PORT}"
+    else:
+        PROXY_URL = f"socks5://{PROXY_HOST}:{PROXY_PORT}"
 else:
     PROXY_URL = None
 
