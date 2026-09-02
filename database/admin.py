@@ -1,11 +1,12 @@
+import time
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select, update, cast, BigInteger
 from sqlalchemy.engine import Result
 from sqlalchemy.orm import selectinload
 
 from .base_class import BaseDBApi
-from .model import Admin, Bot
+from .model import Admin, Bot, SuggestedMessage, admin_bot_association
 
 class AdminDatabaseApi(BaseDBApi):
     async def add_admin(self, session: AsyncSession,
@@ -83,4 +84,52 @@ class AdminDatabaseApi(BaseDBApi):
 
         # Возвращаем присвоенный label
         return result.scalar()
+
+    async def get_active_bots_admins(
+        self, session: AsyncSession, days: int = 30
+    ) -> list[int]:
+        """
+        Возвращает список уникальных Telegram ID активных администраторов ботов,
+        у которых были предложенные сообщения за последние `days` дней.
+
+        :param session: Сессия базы данных
+        :param days: Количество дней для определения активности бота
+        :return: список ID администраторов
+        """
+        min_timestamp = time.time() - (days * 86400)
+
+        active_bot_ids_subq = (
+            select(SuggestedMessage.bot_id)
+            .where(
+                SuggestedMessage.bot_id.isnot(None),
+                cast(SuggestedMessage.message_data.op("->>")("date"), BigInteger)
+                >= min_timestamp,
+            )
+            .distinct()
+        )
+
+        stmt1 = (
+            select(Admin.id)
+            .join(admin_bot_association, Admin.id == admin_bot_association.c.admin_id)
+            .where(
+                admin_bot_association.c.bot_id.in_(active_bot_ids_subq),
+                Admin.is_active == True,
+            )
+            .distinct()
+        )
+        res1 = (await session.execute(stmt1)).scalars().all()
+
+        stmt2 = (
+            select(Admin.id)
+            .join(Bot, Admin.id == Bot.creator_id)
+            .where(
+                Bot.id.in_(active_bot_ids_subq),
+                Admin.is_active == True,
+            )
+            .distinct()
+        )
+        res2 = (await session.execute(stmt2)).scalars().all()
+
+        all_admins = list(set(res1) | set(res2))
+        return all_admins
     

@@ -1,8 +1,9 @@
+import asyncio
 import logging
 from aiogram import types, F, Router, Bot
+from aiogram.exceptions import TelegramForbiddenError
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from utils import image_uploader
 from data.config import db
 from data.messages import messages
@@ -50,4 +51,76 @@ async def start_mailing(message: types.Message, bot: Bot, session: AsyncSession)
                     f"An error occured while trying to send mailing message {e}"
                 )
 
+    await message.delete()
+
+
+@router.callback_query(F.data == "active_admins_mailing")
+async def ask_active_admins_mailing(call: types.CallbackQuery, state: FSMContext):
+    await state.set_state(Mailing.active_admins)
+    await call.message.edit_text(
+        text=messages["start_active_admins_mailing"], reply_markup=back_markup
+    )
+
+
+@router.message(Mailing.active_admins)
+async def start_active_admins_mailing(
+    message: types.Message, bot: Bot, session: AsyncSession, state: FSMContext
+):
+    text = message.html_text
+    link = image_uploader(message) if message.photo else None
+
+    status_msg = await message.answer(
+        "⏳ Собираю список администраторов активных ботов..."
+    )
+
+    admins_to_mail = await db.admin_api.get_active_bots_admins(session, days=30)
+    logger.info(
+        f"Obtained from DB active admin IDs for mailing: {admins_to_mail} (count: {len(admins_to_mail)})"
+    )
+
+    if not admins_to_mail:
+        await status_msg.edit_text(
+            "⚠️ Не найдено администраторов активных ботов для рассылки.",
+            reply_markup=back_markup,
+        )
+        await state.clear()
+        return
+
+    await status_msg.edit_text(
+        f"⏳ Начинаю рассылку для {len(admins_to_mail)} администраторов..."
+    )
+
+    success_count = 0
+    fail_count = 0
+
+    for admin_id in admins_to_mail:
+        try:
+            if link is not None:
+                await bot.send_photo(
+                    chat_id=admin_id, photo=link, caption=text, parse_mode="HTML"
+                )
+            else:
+                await bot.send_message(
+                    chat_id=admin_id, text=text, parse_mode="HTML"
+                )
+            success_count += 1
+            await asyncio.sleep(0.05)
+        except TelegramForbiddenError:
+            logger.info(f"Admin {admin_id} has blocked the bot. Marking as inactive.")
+            await db.bot_api.change_user_status(session, admin_id, False)
+            fail_count += 1
+        except Exception as e:
+            logger.info(
+                f"An error occurred while trying to send mailing message to admin {admin_id}: {e}"
+            )
+            fail_count += 1
+
+    await state.clear()
+    await status_msg.edit_text(
+        f"✅ <b>Рассылка по администраторам активных ботов завершена!</b>\n\n"
+        f"👥 Всего получателей: <code>{len(admins_to_mail)}</code>\n"
+        f"🟢 Успешно отправлено: <code>{success_count}</code>\n"
+        f"🔴 Ошибок: <code>{fail_count}</code>",
+        reply_markup=back_markup,
+    )
     await message.delete()
